@@ -645,8 +645,12 @@ app.controller("productosCtrl", function ($scope, $http, SesionService, Categori
                     <td>${producto.Precio}</td>
                     <td>${producto.Existencias}</td>
                     <td>
-                        <button class="btn btn-info btn-ingredientes me-1 mb-1 while-waiting" data-id="${producto.Id_Producto}">Ver ingredientes...</button>
-                        <button class="btn btn-danger btn-eliminar while-waiting" data-id="${producto.Id_Producto}">Eliminar</button>
+                        ${
+                            (producto.Existencias == null)
+                            ? `<button class="btn btn-info btn-ingredientes me-1 mb-1 while-waiting" data-id="${producto.Id_Producto}">Ver ingredientes...</button><br>`
+                            : ""
+                        }
+                        <button class="btn btn-danger btn-eliminar while-waiting" data-id="${producto.Id_Producto}">Eliminar</button><br>
                     </td>
                 </tr>`)
             }
@@ -717,12 +721,22 @@ app.controller("productosCtrl", function ($scope, $http, SesionService, Categori
     $(document).on("click", ".btn-ingredientes", function (event) {
         const id = $(this).data("id")
 
-        $.get(`productos/ingredientes/${id}`, function (html) {
-            modal(html, "Ingredientes", [
-                {html: "Aceptar", class: "btn btn-secondary", fun: function (event) {
-                    closeModal()
-                }}
-            ])
+        $.get(`productos/ingredientes/${id}`, function (ingredientes) {
+            let html = `<table class="table table-sm"><thead><tr>
+                <th>Ingrediente</th>
+                <th>Cantidad Requerida</th>
+                <th>Existencias</th>
+            </tr></thead><tbody>`
+            for (let x in ingredientes) {
+                const ingrediente = ingredientes[x]
+                html += `<tr>
+                    <td>${ingrediente.Nombre_Ingrediente}</td>
+                    <td>${ingrediente.Cantidad} ${ingrediente.Unidad}</td>
+                    <td>${ingrediente.Existencias}</td>
+                </tr>`
+            }
+            html += '</tbody></table>'
+            MensajesService.modal(html)
         })
     })
 

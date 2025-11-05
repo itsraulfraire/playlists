@@ -230,10 +230,14 @@ def productosIngredientes(id):
 @app.route("/producto", methods=["POST"])
 @login
 def guardarProducto():
-    id          = request.form["id"]
-    nombre      = request.form["nombre"]
-    precio      = request.form["precio"]
+    id     = request.form["id"]
+    nombre = request.form["nombre"]
+    precio = request.form["precio"]
+
     existencias = request.form["existencias"]
+    if existencias == '':
+        existencias = None
+
     # fechahora   = datetime.datetime.now(pytz.timezone("America/Matamoros"))
 
     con    = con_pool.get_connection()
