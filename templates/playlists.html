@@ -1,0 +1,42 @@
+<div class="card text-bg-success mb-3" style="max-width: 18rem;">
+  <div class="card-header">Playlists</div>
+  <div class="card-body">
+    <h5 class="card-title"><i class="bi bi-music-note-list"></i> Información</h5>
+    <p class="card-text">
+      Hola {{ "{{ SesionService.getUsr() }}" }}! 
+      {{ "En este módulo puedes visualizar tus playlists inteligentes conectadas con Spotify." }}
+    </p>
+  </div>
+</div>
+
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="row">
+  <div class="col-12 col-sm-12 col-lg-12 col-xl-12 col-xxl-12">
+    <div class="shadow shadow-lg p-3 mb-2">
+      <h5>🎧 Tus Playlists Inteligentes</h5>
+
+      <div class="row">
+        <!-- Repetición dinámica de playlists -->
+        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3" ng-repeat="p in playlists">
+          <div class="card text-bg-info mb-3 h-100">
+            <div class="card-header">
+              Playlist #{{ "{{ p.idPlaylist }}" }}
+            </div>
+            <div class="card-body">
+              <h5 class="card-title">{{ "{{ p.nombre }}" }}</h5>
+              <p class="card-text small">{{ "{{ p.descripcion }}" }}</p>
+            </div>
+            <div class="card-footer text-center bg-transparent">
+              <a ng-href="{{ "{{ p.url }}" }}" target="_blank" class="btn btn-sm btn-outline-light">
+                <i class="bi bi-spotify"></i> Escuchar
+              </a>
+            </div>
+          </div>
+        </div>
+        <!-- Fin ng-repeat -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="div-to-complete-screen"></div>
