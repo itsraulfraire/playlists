@@ -7,7 +7,7 @@
 from functools import wraps
 from flask import Flask, render_template, request, jsonify, make_response, session
 import mysql.connector.pooling
-import pytz, datetime
+import pytz, datetime, uuid, traceback
 
 app = Flask(__name__)
 app.secret_key = "Test12345"
@@ -21,14 +21,23 @@ class DatabaseConnection:
             raise Exception("Esta clase es un Singleton.")
         else:
             DatabaseConnection._instance = self
-            self.pool = mysql.connector.pooling.MySQLConnectionPool(
-                pool_name="playlist_pool",
-                pool_size=5,
-                host="185.232.14.52",
-                database="u760464709_16005339_bd",
-                user="u760464709_16005339_usr",
-                password="/iJRzrJBz+P1"
-            )
+
+            # Evita conflicto de nombres de pool al recargar Flask en modo debug
+            pool_name = f"playlist_pool_{uuid.uuid4().hex[:8]}"
+
+            try:
+                self.pool = mysql.connector.pooling.MySQLConnectionPool(
+                    pool_name=pool_name,
+                    pool_size=5,
+                    host="185.232.14.52",
+                    database="u760464709_16005339_bd",
+                    user="u760464709_16005339_usr",
+                    password="/iJRzrJBz+P1"
+                )
+                print(f"✅ Pool de conexiones '{pool_name}' creado correctamente.")
+            except Exception as e:
+                print("❌ Error al crear el pool de conexiones MySQL:", e)
+                raise e
 
     @staticmethod
     def get_instance():
@@ -36,6 +45,8 @@ class DatabaseConnection:
             DatabaseConnection()
         return DatabaseConnection._instance
 
+
+# --- Decorador para verificar sesión ---
 def requiere_login(fun):
     @wraps(fun)
     def decorador(*args, **kwargs):
@@ -44,9 +55,12 @@ def requiere_login(fun):
         return fun(*args, **kwargs)
     return decorador
 
+
+# --- Rutas principales ---
 @app.route("/")
 def index():
     return render_template("index.html")
+
 
 @app.route("/login")
 def login():
@@ -58,59 +72,97 @@ def iniciarSesion():
     usuario = request.form["usuario"]
     contrasena = request.form["contrasena"]
 
-    db = DatabaseConnection.get_instance()
-    con = db.pool.get_connection()
-    cursor = con.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT id_usuarios, nombre_usuario, tipo_usuario
-        FROM usuarios
-        WHERE nombre_usuario = %s AND contrasena = %s
-    """, (usuario, contrasena))
-    registros = cursor.fetchall()
-    cursor.close()
-    con.close()
+    try:
+        db = DatabaseConnection.get_instance()
+        con = db.pool.get_connection()
+        cursor = con.cursor(dictionary=True)
 
-    if registros:
-        session["login"] = True
-        session["login-usr"] = registros[0]["nombre_usuario"]
-        session["login-tipo"] = registros[0]["tipo_usuario"]
-    else:
-        session.clear()
+        cursor.execute("""
+            SELECT id_usuarios, nombre_usuario, tipo_usuario
+            FROM usuarios
+            WHERE nombre_usuario = %s AND contrasena = %s
+        """, (usuario, contrasena))
 
-    return jsonify(registros)
+        registros = cursor.fetchall()
+        cursor.close()
+        con.close()
+
+        if registros:
+            session["login"] = True
+            session["usr"] = registros[0]["nombre_usuario"]
+            session["tipo"] = registros[0]["tipo_usuario"]
+        else:
+            session["login"] = False
+
+        return jsonify(registros)
+
+    except Exception as e:
+        print("❌ ERROR en /iniciarSesion:")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route("/playlists")
 @requiere_login
 def playlists():
     return render_template("playlists.html")
 
+
 @app.route("/preferencias")
 @requiere_login
 def preferencias():
     return make_response(jsonify({
-        "usr": session.get("login-usr"),
-        "tipo": session.get("login-tipo")
+        "usr": session.get("usr"),
+        "tipo": session.get("tipo", 2)
     }))
 
+
+# --- Endpoint para obtener playlists desde la base de datos ---
 @app.route("/playlists/buscar")
 @requiere_login
 def buscarPlaylists():
-    db = DatabaseConnection.get_instance()
-    con = db.pool.get_connection()
-    cursor = con.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT idPlaylist, nombre, descripcion, url
-        FROM playlists
-        ORDER BY idPlaylist DESC
-        LIMIT 10
-    """)
-    data = cursor.fetchall()
-    cursor.close()
-    con.close()
-    return jsonify(data)
+    try:
+        db = DatabaseConnection.get_instance()
+        print("✅ Pool obtenido correctamente:", db.pool)
+
+        con = db.pool.get_connection()
+        print("✅ Conexión obtenida del pool:", con)
+
+        cursor = con.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT idPlaylist, nombre, descripcion, url
+            FROM playlists
+            ORDER BY idPlaylist DESC
+            LIMIT 10
+        """)
+
+        data = cursor.fetchall()
+        cursor.close()
+        con.close()
+
+        print(f"✅ {len(data)} playlists obtenidas correctamente.")
+        return jsonify(data)
+
+    except Exception as e:
+        print("❌ ERROR en /playlists/buscar:")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# --- Cierre de sesión ---
+@app.route("/cerrarSesion", methods=["POST"])
+def cerrarSesion():
+    session.clear()
+    return jsonify({"mensaje": "Sesión cerrada"})
+
+
+# --- Sincronización de hora (opcional) ---
+@app.route("/fechaHora")
+def fechaHora():
+    zona = pytz.timezone("America/Mexico_City")
+    ahora = datetime.datetime.now(zona)
+    return ahora.strftime("%Y-%m-%d %H:%M:%S")
 
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
