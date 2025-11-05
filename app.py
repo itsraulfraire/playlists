@@ -30,9 +30,9 @@ class DatabaseConnection:
                     pool_name=pool_name,
                     pool_size=5,
                     host="185.232.14.52",
-                    database="u760464709_16005339_bd",
-                    user="u760464709_16005339_usr",
-                    password="/iJRzrJBz+P1"
+                    database="u760464709_23005270_bd",
+                    user="u760464709_23005270_usr",
+                    password="$x[QjFu>Lt9H"
                 )
                 print(f"✅ Pool de conexiones '{pool_name}' creado correctamente.")
             except Exception as e:
@@ -166,3 +166,4 @@ def fechaHora():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
