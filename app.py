@@ -72,12 +72,12 @@ def iniciarSesion():
 
     if registros:
         session["login"] = True
-        session["usr"] = registros[0]["nombre_usuario"]
+        session["login-usr"] = registros[0]["nombre_usuario"]
+        session["login-tipo"] = registros[0]["tipo_usuario"]
     else:
-        session["login"] = False
+        session.clear()
 
     return jsonify(registros)
-
 
 @app.route("/playlists")
 @requiere_login
@@ -89,7 +89,7 @@ def playlists():
 def preferencias():
     return make_response(jsonify({
         "usr": session.get("login-usr"),
-        "tipo": session.get("login-tipo", 2)
+        "tipo": session.get("login-tipo")
     }))
 
 @app.route("/playlists/buscar")
@@ -112,4 +112,5 @@ def buscarPlaylists():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
