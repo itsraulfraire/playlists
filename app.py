@@ -105,13 +105,13 @@ def preferencias():
     }))
 
 @app.route("/playlists")
-@login_required
+@login
 def playlists():
     return render_template("playlists.html")
 
 
 @app.route("/playlists/buscar")
-@login_required
+@login
 def buscarPlaylists():
     db = DatabaseConnection.get_instance()
     con = db.pool.get_connection()
@@ -130,3 +130,4 @@ def buscarPlaylists():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
