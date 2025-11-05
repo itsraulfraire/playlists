@@ -12,7 +12,6 @@ import pytz, datetime, uuid, traceback
 app = Flask(__name__)
 app.secret_key = "Test12345"
 
-# --- Patrón Singleton ---
 class DatabaseConnection:
     _instance = None
 
@@ -21,8 +20,6 @@ class DatabaseConnection:
             raise Exception("Esta clase es un Singleton.")
         else:
             DatabaseConnection._instance = self
-
-            # Evita conflicto de nombres de pool al recargar Flask en modo debug
             pool_name = f"playlist_pool_{uuid.uuid4().hex[:8]}"
 
             try:
@@ -45,8 +42,6 @@ class DatabaseConnection:
             DatabaseConnection()
         return DatabaseConnection._instance
 
-
-# --- Decorador para verificar sesión ---
 def requiere_login(fun):
     @wraps(fun)
     def decorador(*args, **kwargs):
@@ -54,9 +49,7 @@ def requiere_login(fun):
             return jsonify({"error": "No has iniciado sesión"}), 401
         return fun(*args, **kwargs)
     return decorador
-
-
-# --- Rutas principales ---
+    
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -116,8 +109,6 @@ def preferencias():
         "tipo": session.get("tipo", 2)
     }))
 
-
-# --- Endpoint para obtener playlists desde la base de datos ---
 @app.route("/playlists/buscar")
 @requiere_login
 def buscarPlaylists():
@@ -148,22 +139,17 @@ def buscarPlaylists():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-
-# --- Cierre de sesión ---
 @app.route("/cerrarSesion", methods=["POST"])
 def cerrarSesion():
     session.clear()
     return jsonify({"mensaje": "Sesión cerrada"})
 
-
-# --- Sincronización de hora (opcional) ---
 @app.route("/fechaHora")
 def fechaHora():
     zona = pytz.timezone("America/Mexico_City")
     ahora = datetime.datetime.now(zona)
     return ahora.strftime("%Y-%m-%d %H:%M:%S")
-
-
 if __name__ == "__main__":
     app.run(debug=True)
+
 
