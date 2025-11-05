@@ -91,7 +91,46 @@ app.service("MensajesService", function () {
     this.pop   = pop
     this.toast = toast
 })
+app.service("ProductoAPI", function ($q) {
+    this.producto = function (id) {
+        var deferred = $q.defer()
 
+        $.get(`producto/${id}`)
+        .done(function (producto){
+            deferred.resolve(producto)
+        })
+        .fail(function (error) {
+            deferred.reject(error)
+        })
+
+        return deferred.promise
+   }
+})
+app.service("RecetaAPI", function ($q) {
+    this.ingredientesProducto = function (producto) {
+        var deferred = $q.defer()
+
+        $.get(`productos/ingredientes/${producto}`)
+        .done(function (ingredientes){
+            deferred.resolve(ingredientes)
+        })
+        .fail(function (error) {
+            deferred.reject(error)
+        })
+
+        return deferred.promise
+    }
+})
+app.factory("RecetaFacade", function(ProductoAPI, RecetaAPI, $q) {
+    return {
+        obtenerRecetaProducto: function(producto) {
+            return $q.all({
+                producto: ProductoAPI.producto(producto),
+                ingredientes: RecetaAPI.ingredientesProducto(producto)
+            })
+        }
+    };
+})
 
 app.config(function ($routeProvider, $locationProvider, $provide) {
     $provide.decorator("MensajesService", function ($delegate, $log) {
@@ -622,7 +661,7 @@ app.controller("loginCtrl", function ($scope, $http, $rootScope) {
         disableAll()
     })
 })
-app.controller("productosCtrl", function ($scope, $http, SesionService, CategoriaFactory, MensajesService) {
+app.controller("productosCtrl", function ($scope, $http, SesionService, CategoriaFactory, MensajesService, RecetaFacade) {
     function buscarProductos() {
         $("#tbodyProductos").html(`<tr>
             <th colspan="5" class="text-center">
@@ -643,7 +682,7 @@ app.controller("productosCtrl", function ($scope, $http, SesionService, Categori
                     <td>${producto.Id_Producto}</td>
                     <td>${producto.Nombre_Producto}</td>
                     <td>${producto.Precio}</td>
-                    <td>${producto.Existencias}</td>
+                    <td>${producto.Existencias || ''}</td>
                     <td>
                         ${
                             (producto.Existencias == null)
@@ -721,14 +760,20 @@ app.controller("productosCtrl", function ($scope, $http, SesionService, Categori
     $(document).on("click", ".btn-ingredientes", function (event) {
         const id = $(this).data("id")
 
-        $.get(`productos/ingredientes/${id}`, function (ingredientes) {
-            let html = `<table class="table table-sm"><thead><tr>
-                <th>Ingrediente</th>
-                <th>Cantidad Requerida</th>
-                <th>Existencias</th>
+        RecetaFacade.obtenerRecetaProducto(id).then(function (receta) {
+            let producto = receta.producto[0]
+            let html = `<b>Producto: </b>${producto.Nombre_Producto}<br>
+            <b>Precio: </b>$ ${producto.Precio.toFixed(2)}
+            <b> Categoría: </b>${producto.Categoria || "Sin Categoría"}<br>
+            <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Ingrediente</th>
+                    <th>Cantidad Requerida</th>
+                    <th>Existencias</th>
             </tr></thead><tbody>`
-            for (let x in ingredientes) {
-                const ingrediente = ingredientes[x]
+            for (let x in receta.ingredientes) {
+                const ingrediente = receta.ingredientes[x]
                 html += `<tr>
                     <td>${ingrediente.Nombre_Ingrediente}</td>
                     <td>${ingrediente.Cantidad} ${ingrediente.Unidad}</td>
