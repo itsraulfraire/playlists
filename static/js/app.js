@@ -121,6 +121,15 @@ app.service("RecetaAPI", function ($q) {
         return deferred.promise
     }
 })
+app.service("PlaylistAPI", function ($q) {
+    this.buscarPlaylists = function () {
+        const deferred = $q.defer();
+        $.get("playlists/buscar")
+            .done(data => deferred.resolve(data))
+            .fail(err => deferred.reject(err));
+        return deferred.promise;
+    };
+});
 app.factory("RecetaFacade", function(ProductoAPI, RecetaAPI, $q) {
     return {
         obtenerRecetaProducto: function(producto) {
@@ -131,6 +140,29 @@ app.factory("RecetaFacade", function(ProductoAPI, RecetaAPI, $q) {
         }
     };
 })
+app.factory("PlaylistFactory", function () {
+    function Playlist(idPlaylist, nombre, descripcion, url) {
+        this.idPlaylist = idPlaylist;
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+        this.url = url;
+    }
+
+    Playlist.prototype.getInfo = function () {
+        return {
+            idPlaylist: this.idPlaylist,
+            nombre: this.nombre,
+            descripcion: this.descripcion,
+            url: this.url
+        };
+    };
+
+    return {
+        create: function (idPlaylist, nombre, descripcion, url) {
+            return new Playlist(idPlaylist, nombre, descripcion, url);
+        }
+    };
+});
 
 app.config(function ($routeProvider, $locationProvider, $provide) {
     $provide.decorator("MensajesService", function ($delegate, $log) {
@@ -164,13 +196,9 @@ app.config(function ($routeProvider, $locationProvider, $provide) {
         templateUrl: "login",
         controller: "loginCtrl"
     })
-    .when("/productos", {
-        templateUrl: "productos",
-        controller: "productosCtrl"
-    })
-    .when("/ventas", {
-        templateUrl: "ventas",
-        controller: "ventasCtrl"
+    .when("/playlists", {
+        templateUrl: "playlists",
+        controller: "playlistsCtrl"
     })
     .otherwise({
         redirectTo: "/"
@@ -183,7 +211,7 @@ app.run(["$rootScope", "$location", "$timeout", "SesionService", function($rootS
     $rootScope.incompleteRequest = false
     $rootScope.completeRequest   = false
     $rootScope.login             = localStorage.getItem("login")
-    const defaultRouteAuth       = "#/productos"
+    const defaultRouteAuth       = "#/playlists"
     let timesChangesSuccessRoute = 0
 
 
@@ -330,17 +358,11 @@ app.run(["$rootScope", "$location", "$timeout", "SesionService", function($rootS
 
 
             // swipe
-            if (path.indexOf("productos") != -1) {
+            if (path.indexOf("playlists") != -1) {
                 $rootScope.leftView      = ""
-                $rootScope.rightView     = "Ventas"
+                $rootScope.rightView     = ""
                 $rootScope.leftViewLink  = ""
-                $rootScope.rightViewLink = "#/ventas"
-            }
-            else if (path.indexOf("ventas") != -1) {
-                $rootScope.leftView      = "Productos"
-                $rootScope.rightView     = "Notificaciones"
-                $rootScope.leftViewLink  = "#/productos"
-                $rootScope.rightViewLink = "#/notificaciones"
+                $rootScope.rightViewLink = ""
             }
             else {
                 $rootScope.leftView      = ""
@@ -661,148 +683,15 @@ app.controller("loginCtrl", function ($scope, $http, $rootScope) {
         disableAll()
     })
 })
-app.controller("productosCtrl", function ($scope, $http, SesionService, CategoriaFactory, MensajesService, RecetaFacade) {
-    function buscarProductos() {
-        $("#tbodyProductos").html(`<tr>
-            <th colspan="5" class="text-center">
-                <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
-                    <span class="visually-hidden">Cargando...</span>
-                </div>
-            </th>
-        </tr>`)
-        $.get("productos/buscar", {
-            busqueda: ""
-        }, function (productos) {
-            enableAll()
-            $("#tbodyProductos").html("")
-            for (let x in productos) {
-                const producto = productos[x]
+app.controller("playlistsCtrl", function ($scope, PlaylistAPI, PlaylistFactory) {
+    $scope.playlists = [];
 
-                $("#tbodyProductos").append(`<tr>
-                    <td>${producto.Id_Producto}</td>
-                    <td>${producto.Nombre_Producto}</td>
-                    <td>${producto.Precio}</td>
-                    <td>${producto.Existencias || ''}</td>
-                    <td>
-                        ${
-                            (producto.Existencias == null)
-                            ? `<button class="btn btn-info btn-ingredientes me-1 mb-1 while-waiting" data-id="${producto.Id_Producto}">Ver ingredientes...</button><br>`
-                            : ""
-                        }
-                        <button class="btn btn-danger btn-eliminar while-waiting" data-id="${producto.Id_Producto}">Eliminar</button><br>
-                    </td>
-                </tr>`)
-            }
-        })
-        disableAll()
-    }
-
-    buscarProductos()
-
-
-    $scope.SesionService = SesionService
-
-    $.get("productos/categoria", {
-        categoria: "Galletas"
-    }, function (galletas) {
-        const categoriaGalletas = CategoriaFactory.create("Galletas", galletas)
-        console.log("Galletas Factory", categoriaGalletas.getInfo())
-        $scope.categoriaGalletas = categoriaGalletas
-    })
-    $.get("productos/categoria", {
-        categoria: "Refrescos"
-    }, function (refrescos) {
-        const categoriaRefrescos = CategoriaFactory.create("Refrescos", refrescos)
-        console.log("Refrescos Factory", categoriaRefrescos.getInfo())
-        $scope.categoriaRefrescos = categoriaRefrescos
-    })
-
-
-    Pusher.logToConsole = true
-
-    const pusher = new Pusher("12cb9c6b5319b2989000", {
-        cluster: "us2"
-    })
-    const channel = pusher.subscribe("canalProductos")
-
-    $("#frmProducto")
-    .off("submit")
-    .submit(function (event) {
-        event.preventDefault()
-
-        $.post("producto", {
-            id: "",
-            nombre: $("#txtNombre").val(),
-            precio: $("#txtPrecio").val(),
-            existencias: $("#txtExistencias").val(),
-        }, function (respuesta) {
-            MensajesService.pop("Has agregado un producto.")
-            enableAll()
-        })
-        disableAll()
-    })
-
-    $("#chkActualizarAutoTbodyProductos")
-    .off("click")
-    .click(function (event) {
-        if (this.checked) {
-            channel.bind("eventoProductos", function(data) {
-                // alert(JSON.stringify(data))
-                buscarProductos()
-            })
-            return
-        }
-
-        channel.unbind("eventoProductos")
-    })
-
-    $(document).off("click", ".btn-ingredientes")
-    $(document).on("click", ".btn-ingredientes", function (event) {
-        const id = $(this).data("id")
-
-        RecetaFacade.obtenerRecetaProducto(id).then(function (receta) {
-            let producto = receta.producto[0]
-            let html = `<b>Producto: </b>${producto.Nombre_Producto}<br>
-            <b>Precio: </b>$ ${producto.Precio.toFixed(2)}
-            <b> Categoría: </b>${producto.Categoria || "Sin Categoría"}<br>
-            <table class="table table-sm">
-            <thead>
-                <tr>
-                    <th>Ingrediente</th>
-                    <th>Cantidad Requerida</th>
-                    <th>Existencias</th>
-            </tr></thead><tbody>`
-            for (let x in receta.ingredientes) {
-                const ingrediente = receta.ingredientes[x]
-                html += `<tr>
-                    <td>${ingrediente.Nombre_Ingrediente}</td>
-                    <td>${ingrediente.Cantidad} ${ingrediente.Unidad}</td>
-                    <td>${ingrediente.Existencias}</td>
-                </tr>`
-            }
-            html += '</tbody></table>'
-            MensajesService.modal(html)
-        })
-    })
-
-    $(document).off("click", ".btn-eliminar")
-    $(document).on("click", ".btn-eliminar", function (event) {
-        const id = $(this).data("id")
-
-        modal("Eliminar este producto?", 'Confirmaci&oacute;n', [
-            {html: "No", class: "btn btn-secondary", dismiss: true},
-            {html: "Sí", class: "btn btn-danger while-waiting", defaultButton: true, fun: function () {
-                $.post(`producto/eliminar`, {
-                    id: id
-                }, function (respuesta) {
-                    enableAll()
-                    closeModal()
-                })
-                disableAll()
-            }}
-        ])
-    })
-})
+    PlaylistAPI.buscarPlaylists().then(function (data) {
+        $scope.playlists = data.map(p =>
+            PlaylistFactory.create(p.idPlaylist, p.nombre, p.descripcion, p.url)
+        );
+    });
+});
 
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
