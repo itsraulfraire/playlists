@@ -172,7 +172,7 @@ def buscarProductos():
 
     return make_response(jsonify(registros))
 
-@app.route("/app/productos/categoria", methods=["GET"])
+@app.route("/productos/categoria", methods=["GET"])
 @login
 def productosCategorias():
     args      = request.args
