@@ -1,10 +1,9 @@
 <div class="card text-bg-success mb-3" style="max-width: 18rem;">
-    <div class="card-header">Sesión</div>
+    <div class="card-header">Productos</div>
     <div class="card-body">
-        <h5 class="card-title">Información</h5>
+        <h5 class="card-title"><i class="bi bi-info"></i> Información</h5>
         <p class="card-text">
-            <b>Tipo: </b> {{ "{{ SesionService.getTipo() }}" }}
-            <b> Usuario: </b> {{ "{{ SesionService.getUsr() }}" }}
+           Hola {{ "{{ SesionService.getUsr() }}" }}! {{ "En este módulo puedes: {{ SesionService.getTipo() == 1 ? 'Agregar y Eliminar' : 'Solo agregar' }}." }}
         </p>
     </div>
 </div>
