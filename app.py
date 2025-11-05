@@ -37,7 +37,7 @@ class DatabaseConnection:
         return DatabaseConnection._instance
 
 
-def login_required(fun):
+def login(fun):
     @wraps(fun)
     def decorador(*args, **kwargs):
         if not session.get("login"):
@@ -107,3 +107,4 @@ def buscarPlaylists():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
