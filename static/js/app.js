@@ -31,6 +31,7 @@ function debounce(fun, delay) {
     }
 }
 
+
 const DateTime = luxon.DateTime
 let lxFechaHora
 let diffMs = 0
@@ -46,7 +47,77 @@ const configFechaHora = {
 }
 
 const app = angular.module("angularjsApp", ["ngRoute"])
-app.config(function ($routeProvider, $locationProvider) {
+
+
+app.service("SesionService", function () {
+    this.tipo = null
+    this.usr  = null
+
+    this.setTipo = function (tipo) {
+        this.tipo = tipo
+    }
+    this.getTipo = function () {
+        return this.tipo
+    }
+
+    this.setUsr = function (usr) {
+        this.usr = usr
+    }
+    this.getUsr = function () {
+        return this.usr
+    }
+})
+app.factory("CategoriaFactory", function () {
+    function Categoria(titulo, productos) {
+        this.titulo    = titulo
+        this.productos = productos
+    }
+
+    Categoria.prototype.getInfo = function () {
+        return {
+            titulo: this.titulo,
+            productos: this.productos
+        }
+    }
+
+    return {
+        create: function (titulo, productos) {
+            return new Categoria(titulo, productos)
+        }
+    }
+})
+app.service("MensajesService", function () {
+    this.modal = modal
+    this.pop   = pop
+    this.toast = toast
+})
+
+
+app.config(function ($routeProvider, $locationProvider, $provide) {
+    $provide.decorator("MensajesService", function ($delegate, $log) {
+        const originalModal = $delegate.modal
+        const originalPop   = $delegate.pop
+        const originalToast = $delegate.toast
+
+        $delegate.modal = function (msg) {
+            originalModal(msg, "Mensaje", [
+                {"html": "Aceptar", "class": "btn btn-lg btn-secondary", defaultButton: true, dismiss: true}
+            ])
+        }
+        $delegate.pop = function (msg) {
+            $(".div-temporal").remove()
+            $("body").prepend($("<div />", {
+                class: "div-temporal"
+            }))
+            originalPop(".div-temporal", msg, "info")
+        }
+        $delegate.toast = function (msg) {
+            originalToast(msg, 2)
+        }
+
+        return $delegate
+    })
+
     $locationProvider.hashPrefix("")
 
     $routeProvider
@@ -58,21 +129,15 @@ app.config(function ($routeProvider, $locationProvider) {
         templateUrl: "productos",
         controller: "productosCtrl"
     })
-
-
-
-    .when("/decoraciones", {
-        templateUrl: "decoraciones",
-        controller: "decoracionesCtrl"
+    .when("/ventas", {
+        templateUrl: "ventas",
+        controller: "ventasCtrl"
     })
-
-
-
     .otherwise({
         redirectTo: "/"
     })
 })
-app.run(["$rootScope", "$location", "$timeout", function($rootScope, $location, $timeout) {
+app.run(["$rootScope", "$location", "$timeout", "SesionService", function($rootScope, $location, $timeout, SesionService) {
     $rootScope.slide             = ""
     $rootScope.spinnerGrow       = false
     $rootScope.sendingRequest    = false
@@ -102,6 +167,8 @@ app.run(["$rootScope", "$location", "$timeout", function($rootScope, $location, 
         preferencias = {}
     }
     $rootScope.preferencias = preferencias
+    SesionService.setTipo(preferencias.tipo)
+    SesionService.setUsr(preferencias.usr)
 
 
     $rootScope.$on("$routeChangeSuccess", function (event, current, previous) {
@@ -525,8 +592,13 @@ app.run(["$rootScope", "$location", "$timeout", function($rootScope, $location, 
             activeMenuOption(`#${path}`)
         }
     })
+    $rootScope.$on("$routeChangeError", function () {
+        $rootScope.spinnerGrow = false
+    })
+    $rootScope.$on("$routeChangeStart", function (event, next, current) {
+        $rootScope.spinnerGrow = true
+    })
 }])
-
 app.controller("loginCtrl", function ($scope, $http, $rootScope) {
     $("#frmInicioSesion").submit(function (event) {
         event.preventDefault()
@@ -550,7 +622,7 @@ app.controller("loginCtrl", function ($scope, $http, $rootScope) {
         disableAll()
     })
 })
-app.controller("productosCtrl", function ($scope, $http, $rootScope) {
+app.controller("productosCtrl", function ($scope, $http, SesionService, CategoriaFactory, MensajesService) {
     function buscarProductos() {
         $("#tbodyProductos").html(`<tr>
             <th colspan="5" class="text-center">
@@ -583,8 +655,25 @@ app.controller("productosCtrl", function ($scope, $http, $rootScope) {
     }
 
     buscarProductos()
-    
-    let preferencias = $rootScope.preferencias
+
+
+    $scope.SesionService = SesionService
+
+    $.get("productos/categoria", {
+        categoria: "Galletas"
+    }, function (galletas) {
+        const categoriaGalletas = CategoriaFactory.create("Galletas", galletas)
+        console.log("Galletas Factory", categoriaGalletas.getInfo())
+        $scope.categoriaGalletas = categoriaGalletas
+    })
+    $.get("productos/categoria", {
+        categoria: "Refrescos"
+    }, function (refrescos) {
+        const categoriaRefrescos = CategoriaFactory.create("Refrescos", refrescos)
+        console.log("Refrescos Factory", categoriaRefrescos.getInfo())
+        $scope.categoriaRefrescos = categoriaRefrescos
+    })
+
 
     Pusher.logToConsole = true
 
@@ -593,7 +682,9 @@ app.controller("productosCtrl", function ($scope, $http, $rootScope) {
     })
     const channel = pusher.subscribe("canalProductos")
 
-    $(document).on("submit", "#frmProducto", function (event) {
+    $("#frmProducto")
+    .off("submit")
+    .submit(function (event) {
         event.preventDefault()
 
         $.post("producto", {
@@ -602,12 +693,15 @@ app.controller("productosCtrl", function ($scope, $http, $rootScope) {
             precio: $("#txtPrecio").val(),
             existencias: $("#txtExistencias").val(),
         }, function (respuesta) {
+            MensajesService.pop("Has agregado un producto.")
             enableAll()
         })
         disableAll()
     })
 
-    $(document).on("click", "#chkActualizarAutoTbodyProductos", function (event) {
+    $("#chkActualizarAutoTbodyProductos")
+    .off("click")
+    .click(function (event) {
         if (this.checked) {
             channel.bind("eventoProductos", function(data) {
                 // alert(JSON.stringify(data))
@@ -619,6 +713,7 @@ app.controller("productosCtrl", function ($scope, $http, $rootScope) {
         channel.unbind("eventoProductos")
     })
 
+    $(document).off("click", ".btn-ingredientes")
     $(document).on("click", ".btn-ingredientes", function (event) {
         const id = $(this).data("id")
 
@@ -631,6 +726,7 @@ app.controller("productosCtrl", function ($scope, $http, $rootScope) {
         })
     })
 
+    $(document).off("click", ".btn-eliminar")
     $(document).on("click", ".btn-eliminar", function (event) {
         const id = $(this).data("id")
 
@@ -648,40 +744,6 @@ app.controller("productosCtrl", function ($scope, $http, $rootScope) {
         ])
     })
 })
-
-
-app.controller("decoracionesCtrl", function ($scope, $http) {
-    function buscarDecoraciones() {
-        $.get("tbodyDecoraciones", function (trsHTML) {
-            $("#tbodyDecoraciones").html(trsHTML)
-        })
-    }
-
-    buscarDecoraciones()
-    
-    Pusher.logToConsole = true
-
-    const pusher = new Pusher("12cb9c6b5319b2989000", {
-        cluster: "us2"
-    })
-    const channel = pusher.subscribe("canalDecoraciones")
-    channel.bind("eventoDecoraciones", function(data) {
-        // alert(JSON.stringify(data))
-        buscarDecoraciones()
-    })
-
-    $(document).on("submit", "#frmDecoracion", function (event) {
-        event.preventDefault()
-
-        $.post("decoracion", {
-            id: "",
-            nombre: $("#txtNombre").val(),
-            precio: $("#txtPrecio").val(),
-            existencias: $("#txtExistencias").val(),
-        })
-    })
-})
-
 
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)

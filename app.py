@@ -172,6 +172,38 @@ def buscarProductos():
 
     return make_response(jsonify(registros))
 
+@app.route("/app/productos/categoria", methods=["GET"])
+@login
+def productosCategorias():
+    args      = request.args
+    categoria = args["categoria"]
+    
+    try:
+        con    = con_pool.get_connection()
+        cursor = con.cursor(dictionary=True)
+        sql    = """
+        SELECT Nombre_Producto
+        FROM productos
+        WHERE Categoria = %s
+        ORDER BY Nombre_Producto ASC
+        LIMIT 50 OFFSET 0
+        """
+        val    = (categoria, )
+
+        cursor.execute(sql, val)
+        registros = cursor.fetchall()
+
+    except mysql.connector.errors.ProgrammingError as error:
+        registros = []
+
+    finally:
+        if cursor:
+            cursor.close()
+        if con and con.is_connected():
+            con.close()
+
+    return make_response(jsonify(registros))
+
 @app.route("/productos/ingredientes/<int:id>")
 @login
 def productosIngredientes(id):

@@ -115,15 +115,9 @@
             <li class="nav-item ng-hide" ng-show="login">
                 <a class="nav-link" href="#/productos">Productos</a>
             </li>
-    
-    
-    
             <li class="nav-item ng-hide" ng-show="login">
-                <a class="nav-link" href="#/decoraciones">Decoraciones</a>
+                <a class="nav-link" href="#/ventas">Ventas</a>
             </li>
-    
-    
-    
         </ul>
     </div>
 
@@ -131,17 +125,17 @@
         <div id="appSwipeContainer">
             <div id="appSwipeWrapper" style="cursor: grab;">
                 <div id="appContentLeft" style="visibility: hidden;">
-                    <div style="position: relative; top: 25%; left: 0; text-align: center; visibility: hidden;" data-href="{{ leftViewLink }}">
-                        <h5>{{ leftView }}</h5>
+                    <div style="position: relative; top: 25%; left: 0; text-align: center; visibility: hidden;" data-href="{{ '{{ leftViewLink }}' }}">
+                        <h5>{{ '{{ leftView }}' }}</h5>
                         <div class="spinner-border" style="width: 5rem; height: 5rem;" role="status">
                             <span class="visually-hidden">Cargando...</span>
                         </div>
                     </div>
                 </div>
-                <div id="appContent" class="{{ slide }}" ng-view></div>
+                <div id="appContent" class="{{ '{{ slide }}' }}" ng-view></div>
                 <div id="appContentRight" style="visibility: hidden;">
-                    <div style="position: relative; top: 25%; left: 0; text-align: center; visibility: hidden;" data-href="{{ rightViewLink }}">
-                        <h5>{{ rightView }}</h5>
+                    <div style="position: relative; top: 25%; left: 0; text-align: center; visibility: hidden;" data-href="{{ '{{ rightViewLink }}' }}">
+                        <h5>{{ '{{ rightView }}' }}</h5>
                         <div class="spinner-border" style="width: 5rem; height: 5rem;" role="status">
                             <span class="visually-hidden">Cargando...</span>
                         </div>
