@@ -36,15 +36,13 @@ class DatabaseConnection:
             DatabaseConnection()
         return DatabaseConnection._instance
 
-
-def login(fun):
+def requiere_login(fun):
     @wraps(fun)
     def decorador(*args, **kwargs):
         if not session.get("login"):
             return jsonify({"error": "No has iniciado sesión"}), 401
         return fun(*args, **kwargs)
     return decorador
-
 
 @app.route("/")
 def index():
@@ -82,13 +80,13 @@ def iniciarSesion():
 
 
 @app.route("/playlists")
-@login
+@requiere_login
 def playlists():
     return render_template("playlists.html")
 
 
 @app.route("/playlists/buscar")
-@login
+@requiere_login
 def buscarPlaylists():
     db = DatabaseConnection.get_instance()
     con = db.pool.get_connection()
@@ -107,4 +105,3 @@ def buscarPlaylists():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
