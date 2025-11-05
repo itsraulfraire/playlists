@@ -84,6 +84,13 @@ def iniciarSesion():
 def playlists():
     return render_template("playlists.html")
 
+@app.route("/preferencias")
+@requiere_login
+def preferencias():
+    return make_response(jsonify({
+        "usr": session.get("login-usr"),
+        "tipo": session.get("login-tipo", 2)
+    }))
 
 @app.route("/playlists/buscar")
 @requiere_login
@@ -105,3 +112,4 @@ def buscarPlaylists():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
