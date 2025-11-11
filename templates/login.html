@@ -1,32 +1,65 @@
-<div class="row">
-    <div class="col-sm-1 col-md-3 col-lg-3 col-xl-3 col-xxl-3">
+<div class="d-flex align-items-center justify-content-center min-vh-100">
+  <div class="card shadow-lg border-0 p-4 text-center glass-card" 
+       style="max-width: 420px; width: 100%; border-radius: 1rem;">
+
+    <!-- Encabezado -->
+    <div class="text-center mb-3">
+      <i class="bi bi-music-note-beamed text-success" style="font-size: 3rem; animation: pulse 1.5s infinite;"></i>
+      <h4 class="mt-2 text-light fw-bold">Bienvenido</h4>
+      <p class="text-light opacity-75 small">Accede a tus playlists inteligentes</p>
     </div>
 
-    <div class="col-sm-10 col-md-6 col-lg-6 col-xl-6 col-xxl-6">
-        <form method="post" id="frmInicioSesion">
-            <div class="mb-2">
-                <label for="usuario">Usuario:</label>
-                <input type="text" id="usuario" name="usuario" class="form-control form-control-lg while-waiting" autocomplete="username" spellcheck="false" required autofocus>
-            </div>
-            <div class="mb-2">
-                <label for="contrasena">Contraseña:</label>
-                <div class="input-group">
-                    <input type="password" id="contrasena" name="contrasena" class="form-control form-control-lg while-waiting" autocomplete="current-password" minlength="5" maxlength="20" aria-describedby="basic-addon1" required>
-                    <span class="input-group-text toggle-password bg-body" id="basic-addon1" style="font-size: 1.25em; cursor: pointer;"><i class="bi bi-eye"></i></span>
-                </div>
-            </div>
-            <div class="mb-2 text-end">
-                <button class="btn btn-primary btn-lg while-waiting">
-                    <i class="bi bi-box-arrow-right" style="font-size: 1.25em;"></i>
-                    Iniciar Sesión
-                </button>
-            </div>
-        </form>
-        <div class="div-inicio-sesion"></div>
-    </div>
+    <!-- Formulario -->
+    <form method="post" id="frmInicioSesion">
+      <div class="mb-3 text-start">
+        <label for="usuario" class="form-label text-light fw-semibold">Usuario:</label>
+        <input type="text" id="usuario" name="usuario"
+               class="form-control form-control-lg while-waiting bg-dark text-light border-0"
+               autocomplete="username" spellcheck="false" required autofocus>
+      </div>
 
-    <div class="col-sm-1 col-md-3 col-lg-3 col-xl-3 col-xxl-3">
-    </div>
+      <div class="mb-3 text-start">
+        <label for="contrasena" class="form-label text-light fw-semibold">Contraseña:</label>
+        <div class="input-group">
+          <input type="password" id="contrasena" name="contrasena"
+                 class="form-control form-control-lg while-waiting bg-dark text-light border-0"
+                 autocomplete="current-password" minlength="5" maxlength="20"
+                 aria-describedby="basic-addon1" required>
+          <span class="input-group-text toggle-password bg-dark text-light border-0" 
+                id="basic-addon1" style="font-size: 1.25em; cursor: pointer;">
+            <i class="bi bi-eye"></i>
+          </span>
+        </div>
+      </div>
+
+      <div class="d-grid mt-4">
+        <button class="btn btn-success btn-lg while-waiting shadow-sm">
+          <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar Sesión
+        </button>
+      </div>
+    </form>
+
+    <div class="div-inicio-sesion mt-3"></div>
+  </div>
 </div>
 
-<div class="div-to-complete-screen"></div>
+<!-- Estilos personalizados -->
+<style>
+.glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.glass-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 30px rgba(0, 255, 127, 0.2);
+}
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+</style>
