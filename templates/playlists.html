@@ -1,45 +1,27 @@
-<div class="card text-bg-success mb-3" style="max-width: 18rem;">
-  <div class="card-header">Playlists</div>
-  <div class="card-body">
-    <h5 class="card-title"><i class="bi bi-music-note-list"></i> Información</h5>
-    <p class="card-text">
-      Hola {{ "{{ SesionService.getUsr() }}" }}! 
-      {{ "En este módulo puedes visualizar tus playlists inteligentes conectadas con Spotify." }}
-    </p>
-  </div>
+<div class="text-center mb-4 animate__animated animate__fadeInDown">
+  <h2 class="fw-bold"><i class="bi bi-music-note-list"></i> Tus Playlists Inteligentes</h2>
+  <p class="text-light opacity-75">
+    Bienvenido, {{ "{{ SesionService.getUsr() }}" }}.<br>
+    Aquí puedes visualizar y acceder a tus playlists conectadas con Spotify 🎶
+  </p>
 </div>
 
-<!-- CONTENEDOR PRINCIPAL -->
-<div class="row">
-  <div class="col-12 col-sm-12 col-lg-12 col-xl-12 col-xxl-12">
-    <div class="shadow shadow-lg p-3 mb-2">
-      <h5>🎧 Tus Playlists Inteligentes</h5>
-
-      <div class="row">
-        <!-- Repetición dinámica de playlists -->
-        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3" ng-repeat="p in playlists">
-          <div class="card text-bg-info mb-3 h-100">
-            <div class="card-header">
-              Playlist #{{ "{{ p.idPlaylist }}" }}
-            </div>
-            <div class="card-body">
-              <h5 class="card-title">{{ "{{ p.nombre }}" }}</h5>
-              <p class="card-text small">{{ "{{ p.descripcion }}" }}</p>
-              <p class="card-text">
-                <span ng-if="p.esPopular()" class="badge bg-warning text-dark">
-                  🌟 Popular
-                </span>
-                <small>Popularidad: {{ "{{ p.popularidad }}" }}%</small>
-              </p>
-            </div>
-            <div class="card-footer text-center bg-transparent">
-              <a ng-href="{{ "{{ p.url }}" }}" target="_blank" class="btn btn-sm btn-outline-light">
-                <i class="bi bi-spotify"></i> Escuchar
-              </a>
-            </div>
-          </div>
+<div class="container">
+  <div class="row g-4 justify-content-center">
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3" ng-repeat="p in playlists">
+      <div class="card playlist-card text-white animate__animated animate__fadeInUp shadow-lg">
+        <div class="card-img-overlay d-flex flex-column justify-content-end p-3"
+             style="background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));">
+          <h5 class="card-title">{{ "{{ p.nombre }}" }}</h5>
+          <p class="card-text small text-light">{{ "{{ p.descripcion }}" }}</p>
+          <p class="mb-1">
+            <span ng-if="p.esPopular()" class="badge bg-warning text-dark">🌟 Popular</span>
+            <small>Popularidad: {{ "{{ p.popularidad }}" }}%</small>
+          </p>
+          <a ng-href="{{ "{{ p.url }}" }}" target="_blank" class="btn btn-sm btn-spotify mt-2">
+            <i class="bi bi-spotify"></i> Escuchar
+          </a>
         </div>
-        <!-- Fin ng-repeat -->
       </div>
     </div>
   </div>
@@ -47,3 +29,26 @@
 
 <div class="div-to-complete-screen"></div>
 
+<style>
+.playlist-card {
+  background: url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80') center/cover;
+  border: none;
+  border-radius: 1rem;
+  height: 260px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.playlist-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 0 25px rgba(0, 255, 127, 0.5);
+}
+.btn-spotify {
+  background-color: #1db954;
+  color: #000;
+  border: none;
+  transition: all 0.3s ease;
+}
+.btn-spotify:hover {
+  background-color: #1ed760;
+  transform: scale(1.05);
+}
+</style>
