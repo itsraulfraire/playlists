@@ -163,6 +163,56 @@ app.factory("PlaylistFactory", function () {
         }
     };
 });
+// --- Patrón Decorator ---
+app.factory("PlaylistDecorator", function () {
+    function decorate(playlist, extraData) {
+        playlist.popularidad = extraData.popularidad || 0;
+
+        playlist.esPopular = function () {
+            return this.popularidad >= 80; // si tiene más de 80% de popularidad
+        };
+
+        playlist.getInfoCompleta = function () {
+            return {
+                idPlaylist: this.idPlaylist,
+                nombre: this.nombre,
+                descripcion: this.descripcion,
+                url: this.url,
+                popularidad: this.popularidad,
+                esPopular: this.esPopular()
+            };
+        };
+
+        return playlist;
+    }
+
+    return {
+        decorate: decorate
+    };
+});
+// --- Patrón Facade ---
+app.factory("PlaylistFacade", function (PlaylistAPI, PlaylistFactory, PlaylistDecorator, $q) {
+    return {
+        obtenerPlaylists: function () {
+            const deferred = $q.defer();
+
+            PlaylistAPI.buscarPlaylists()
+                .then(function (data) {
+                    const playlistsDecoradas = data.map(p => {
+                        // simulamos popularidad aleatoria
+                        const popularidad = Math.floor(Math.random() * 100);
+                        let playlist = PlaylistFactory.create(p.idPlaylist, p.nombre, p.descripcion, p.url);
+                        return PlaylistDecorator.decorate(playlist, { popularidad });
+                    });
+                    deferred.resolve(playlistsDecoradas);
+                })
+                .catch(err => deferred.reject(err));
+
+            return deferred.promise;
+        }
+    };
+});
+
 
 app.config(function ($routeProvider, $locationProvider, $provide) {
     $provide.decorator("MensajesService", function ($delegate, $log) {
@@ -683,16 +733,15 @@ app.controller("loginCtrl", function ($scope, $http, $rootScope) {
         disableAll()
     })
 })
-app.controller("playlistsCtrl", function ($scope, PlaylistAPI, PlaylistFactory) {
+app.controller("playlistsCtrl", function ($scope, PlaylistFacade) {
     $scope.playlists = [];
 
-    PlaylistAPI.buscarPlaylists().then(function (data) {
-        $scope.playlists = data.map(p =>
-            PlaylistFactory.create(p.idPlaylist, p.nombre, p.descripcion, p.url)
-        );
+    PlaylistFacade.obtenerPlaylists().then(function (data) {
+        $scope.playlists = data;
     });
 });
 
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
+
