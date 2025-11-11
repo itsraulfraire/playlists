@@ -25,6 +25,12 @@
             <div class="card-body">
               <h5 class="card-title">{{ "{{ p.nombre }}" }}</h5>
               <p class="card-text small">{{ "{{ p.descripcion }}" }}</p>
+              <p class="card-text">
+                <span ng-if="p.esPopular()" class="badge bg-warning text-dark">
+                  🌟 Popular
+                </span>
+                <small>Popularidad: {{ "{{ p.popularidad }}" }}%</small>
+              </p>
             </div>
             <div class="card-footer text-center bg-transparent">
               <a ng-href="{{ "{{ p.url }}" }}" target="_blank" class="btn btn-sm btn-outline-light">
@@ -40,3 +46,4 @@
 </div>
 
 <div class="div-to-complete-screen"></div>
+
