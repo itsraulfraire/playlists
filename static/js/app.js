@@ -67,59 +67,10 @@ app.service("SesionService", function () {
         return this.usr
     }
 })
-app.factory("CategoriaFactory", function () {
-    function Categoria(titulo, productos) {
-        this.titulo    = titulo
-        this.productos = productos
-    }
-
-    Categoria.prototype.getInfo = function () {
-        return {
-            titulo: this.titulo,
-            productos: this.productos
-        }
-    }
-
-    return {
-        create: function (titulo, productos) {
-            return new Categoria(titulo, productos)
-        }
-    }
-})
 app.service("MensajesService", function () {
     this.modal = modal
     this.pop   = pop
     this.toast = toast
-})
-app.service("ProductoAPI", function ($q) {
-    this.producto = function (id) {
-        var deferred = $q.defer()
-
-        $.get(`producto/${id}`)
-        .done(function (producto){
-            deferred.resolve(producto)
-        })
-        .fail(function (error) {
-            deferred.reject(error)
-        })
-
-        return deferred.promise
-   }
-})
-app.service("RecetaAPI", function ($q) {
-    this.ingredientesProducto = function (producto) {
-        var deferred = $q.defer()
-
-        $.get(`productos/ingredientes/${producto}`)
-        .done(function (ingredientes){
-            deferred.resolve(ingredientes)
-        })
-        .fail(function (error) {
-            deferred.reject(error)
-        })
-
-        return deferred.promise
-    }
 })
 app.service("PlaylistAPI", function ($q) {
     this.buscarPlaylists = function () {
@@ -130,16 +81,6 @@ app.service("PlaylistAPI", function ($q) {
         return deferred.promise;
     };
 });
-app.factory("RecetaFacade", function(ProductoAPI, RecetaAPI, $q) {
-    return {
-        obtenerRecetaProducto: function(producto) {
-            return $q.all({
-                producto: ProductoAPI.producto(producto),
-                ingredientes: RecetaAPI.ingredientesProducto(producto)
-            })
-        }
-    };
-})
 app.factory("PlaylistFactory", function () {
     function Playlist(idPlaylist, nombre, descripcion, url) {
         this.idPlaylist = idPlaylist;
@@ -163,13 +104,12 @@ app.factory("PlaylistFactory", function () {
         }
     };
 });
-// --- Patrón Decorator ---
 app.factory("PlaylistDecorator", function () {
     function decorate(playlist, extraData) {
         playlist.popularidad = extraData.popularidad || 0;
 
         playlist.esPopular = function () {
-            return this.popularidad >= 80; // si tiene más de 80% de popularidad
+            return this.popularidad >= 80;
         };
 
         playlist.getInfoCompleta = function () {
@@ -190,7 +130,6 @@ app.factory("PlaylistDecorator", function () {
         decorate: decorate
     };
 });
-// --- Patrón Facade ---
 app.factory("PlaylistFacade", function (PlaylistAPI, PlaylistFactory, PlaylistDecorator, $q) {
     return {
         obtenerPlaylists: function () {
@@ -199,7 +138,6 @@ app.factory("PlaylistFacade", function (PlaylistAPI, PlaylistFactory, PlaylistDe
             PlaylistAPI.buscarPlaylists()
                 .then(function (data) {
                     const playlistsDecoradas = data.map(p => {
-                        // simulamos popularidad aleatoria
                         const popularidad = Math.floor(Math.random() * 100);
                         let playlist = PlaylistFactory.create(p.idPlaylist, p.nombre, p.descripcion, p.url);
                         return PlaylistDecorator.decorate(playlist, { popularidad });
@@ -745,5 +683,6 @@ app.controller("playlistsCtrl", function ($scope, PlaylistFacade, SesionService)
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
+
 
 
