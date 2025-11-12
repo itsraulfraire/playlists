@@ -150,20 +150,8 @@ app.factory("PlaylistFacade", function (PlaylistAPI, PlaylistFactory, PlaylistDe
         }
     };
 });
-app.service("UserMediator", function () {
-    let componentes = {};
 
-    return {
-        registrar: function (nombre, componente) {
-            componentes[nombre] = componente;
-        },
-        notificar: function (emisor, evento, data) {
-            if (evento === "usuarioSeleccionado" && componentes["detalle"]) {
-                componentes["detalle"].mostrar(data);
-            }
-        },
-    };
-});
+
 app.config(function ($routeProvider, $locationProvider, $provide) {
     $provide.decorator("MensajesService", function ($delegate, $log) {
         const originalModal = $delegate.modal
@@ -199,10 +187,6 @@ app.config(function ($routeProvider, $locationProvider, $provide) {
     .when("/playlists", {
         templateUrl: "playlists",
         controller: "playlistsCtrl"
-    })
-    .when("/usuarios", {
-        templateUrl: "usuarios",
-        controller: "usuariosCtrl"
     })
     .otherwise({
         redirectTo: "/"
@@ -687,79 +671,15 @@ app.controller("loginCtrl", function ($scope, $http, $rootScope) {
         disableAll()
     })
 })
-app.controller("playlistsCtrl", function ($scope, $http) {
-    $scope.busqueda = "";
+app.controller("playlistsCtrl", function ($scope, PlaylistFacade, SesionService) {
+    $scope.SesionService = SesionService;
     $scope.playlists = [];
-    $scope.totalPlaylists = 0;
 
-    $scope.cargarPlaylists = function () {
-        $http.get("playlists/buscar").then(function (response) {
-            $scope.playlists = response.data;
-            $scope.totalPlaylists = $scope.playlists.length;
-        });
-    };
-
-    $scope.cargarPlaylists();
-
-    $scope.$watch("busqueda", function (newVal, oldVal) {
-        if (newVal !== oldVal) {
-            $http.get("log", {
-                params: {
-                    actividad: "Búsqueda de playlist",
-                    descripcion: `Se realizó una búsqueda con el término "${newVal}"`,
-                },
-            });
-            console.log(`🔍 Se registró log de búsqueda: ${newVal}`);
-        }
-    });
-
-    $scope.$watch("totalPlaylists", function (newVal, oldVal) {
-        if (newVal < oldVal) {
-            $http.get("log", {
-                params: {
-                    actividad: "Eliminación de playlist",
-                    descripcion: `Se eliminó una playlist. Total actual: ${newVal}`,
-                },
-            });
-            console.log("🗑️ Log: se eliminó una playlist");
-        }
+    PlaylistFacade.obtenerPlaylists().then(function (data) {
+        $scope.playlists = data;
     });
 });
-// Controlador principal (lista de usuarios)
-app.controller("usuariosCtrl", function ($scope, $http, UserMediator) {
-    $scope.usuarios = [];
-    $http.get("usuarios/listar").then(function (response) {
-        $scope.usuarios = response.data;
-    });
-
-    UserMediator.registrar("lista", {
-        seleccionar: function (usuario) {
-            UserMediator.notificar("lista", "usuarioSeleccionado", usuario);
-        },
-    });
-
-    $scope.verDetalle = function (usuario) {
-        UserMediator.notificar("lista", "usuarioSeleccionado", usuario);
-    };
-});
-
-// Controlador detalle de usuario
-app.controller("usuarioDetalleCtrl", function ($scope, UserMediator) {
-    $scope.usuario = null;
-
-    UserMediator.registrar("detalle", {
-        mostrar: function (usuario) {
-            $scope.usuario = usuario;
-            $scope.$applyAsync();
-        },
-    });
-});
-
 
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
-
-
-
-
