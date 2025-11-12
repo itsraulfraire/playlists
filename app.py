@@ -151,5 +151,18 @@ def fechaHora():
     return ahora.strftime("%Y-%m-%d %H:%M:%S")
 if __name__ == "__main__":
     app.run(debug=True)
+    
+@app.route("/log", methods=["GET"])
+def logActividad():
+    args = request.args
+    actividad = args.get("actividad")
+    descripcion = args.get("descripcion")
 
+    tz = pytz.timezone("America/Matamoros")
+    ahora = datetime.datetime.now(tz)
+    fechaHoraStr = ahora.strftime("%Y-%m-%d %H:%M:%S")
 
+    with open("log-actividades.txt", "a") as f:
+        f.write(f"{actividad}\t{descripcion}\t{fechaHoraStr}\n")
+
+    return "OK"
