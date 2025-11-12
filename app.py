@@ -21,7 +21,6 @@ class DatabaseConnection:
         else:
             DatabaseConnection._instance = self
             pool_name = f"playlist_pool_{uuid.uuid4().hex[:8]}"
-
             try:
                 self.pool = mysql.connector.pooling.MySQLConnectionPool(
                     pool_name=pool_name,
@@ -42,6 +41,7 @@ class DatabaseConnection:
             DatabaseConnection()
         return DatabaseConnection._instance
 
+
 def requiere_login(fun):
     @wraps(fun)
     def decorador(*args, **kwargs):
@@ -49,7 +49,8 @@ def requiere_login(fun):
             return jsonify({"error": "No has iniciado sesión"}), 401
         return fun(*args, **kwargs)
     return decorador
-    
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -90,7 +91,6 @@ def iniciarSesion():
         return jsonify(registros)
 
     except Exception as e:
-        print("❌ ERROR en /iniciarSesion:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
@@ -109,16 +109,13 @@ def preferencias():
         "tipo": session.get("tipo", 2)
     }))
 
+
 @app.route("/playlists/buscar")
 @requiere_login
 def buscarPlaylists():
     try:
         db = DatabaseConnection.get_instance()
-        print("✅ Pool obtenido correctamente:", db.pool)
-
         con = db.pool.get_connection()
-        print("✅ Conexión obtenida del pool:", con)
-
         cursor = con.cursor(dictionary=True)
         cursor.execute("""
             SELECT idPlaylist, nombre, descripcion, url
@@ -126,43 +123,45 @@ def buscarPlaylists():
             ORDER BY idPlaylist DESC
             LIMIT 10
         """)
-
         data = cursor.fetchall()
         cursor.close()
         con.close()
-
-        print(f"✅ {len(data)} playlists obtenidas correctamente.")
         return jsonify(data)
 
     except Exception as e:
-        print("❌ ERROR en /playlists/buscar:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/app/log", methods=["GET"])
+def logPlaylists():
+    """Registro de eventos observados (búsquedas, filtrados, etc.)"""
+    args = request.args
+    actividad = args.get("actividad", "Actividad desconocida")
+    descripcion = args.get("descripcion", "Sin descripción")
+
+    tz = pytz.timezone("America/Mexico_City")
+    ahora = datetime.datetime.now(tz)
+    fechaHoraStr = ahora.strftime("%Y-%m-%d %H:%M:%S")
+
+    with open("log-busquedas.txt", "a", encoding="utf-8") as f:
+        f.write(f"{actividad}\t{descripcion}\t{fechaHoraStr}\n")
+
+    return jsonify({"mensaje": "Evento registrado", "fecha": fechaHoraStr})
+
 
 @app.route("/cerrarSesion", methods=["POST"])
 def cerrarSesion():
     session.clear()
     return jsonify({"mensaje": "Sesión cerrada"})
 
+
 @app.route("/fechaHora")
 def fechaHora():
     zona = pytz.timezone("America/Mexico_City")
     ahora = datetime.datetime.now(zona)
     return ahora.strftime("%Y-%m-%d %H:%M:%S")
+
+
 if __name__ == "__main__":
     app.run(debug=True)
-    
-@app.route("/log", methods=["GET"])
-def logActividad():
-    args = request.args
-    actividad = args.get("actividad")
-    descripcion = args.get("descripcion")
-
-    tz = pytz.timezone("America/Matamoros")
-    ahora = datetime.datetime.now(tz)
-    fechaHoraStr = ahora.strftime("%Y-%m-%d %H:%M:%S")
-
-    with open("log-actividades.txt", "a") as f:
-        f.write(f"{actividad}\t{descripcion}\t{fechaHoraStr}\n")
-
-    return "OK"
