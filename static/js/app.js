@@ -704,7 +704,7 @@ app.controller("loginCtrl", function ($scope, $http, $rootScope) {
         disableAll()
     })
 })
-app.controller("playlistsCtrl", function ($scope, PlaylistFacade, SesionService) {
+app.controller("playlistsCtrl", function ($scope, PlaylistFacade, SesionService, ObserverService) {
     $scope.SesionService = SesionService;
     $scope.playlists = [];
 
@@ -739,4 +739,5 @@ app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverServ
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
+
 
