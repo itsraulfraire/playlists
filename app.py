@@ -139,6 +139,49 @@ def buscarPlaylists():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/estadoAnimo")
+@requiere_login
+def estadoAnimo():
+    return render_template("estadoAnimo.html")
+
+@app.route("/estadoAnimo/recomendar", methods=["GET"])
+@requiere_login
+def recomendarPlaylist():
+    estado = request.args.get("estado")
+
+    if not estado:
+        return jsonify({"error": "No se especificó el estado de ánimo"}), 400
+
+    try:
+        db = DatabaseConnection.get_instance()
+        con = db.pool.get_connection()
+        cursor = con.cursor(dictionary=True)
+
+        # Ejemplo: Buscar playlists según estado de ánimo (campo 'descripcion')
+        cursor.execute("""
+            SELECT idPlaylist, nombre, descripcion, url
+            FROM playlists
+            WHERE descripcion LIKE %s
+            ORDER BY RAND()
+            LIMIT 1
+        """, (f"%{estado}%",))
+
+        resultado = cursor.fetchone()
+        cursor.close()
+        con.close()
+
+        if not resultado:
+            return jsonify({
+                "mensaje": f"No hay playlists asociadas al estado de ánimo '{estado}'"
+            })
+
+        return jsonify(resultado)
+
+    except Exception as e:
+        print("❌ ERROR en /estadoAnimo/recomendar:")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/cerrarSesion", methods=["POST"])
 def cerrarSesion():
     session.clear()
@@ -151,4 +194,5 @@ def fechaHora():
     return ahora.strftime("%Y-%m-%d %H:%M:%S")
 if __name__ == "__main__":
     app.run(debug=True)
+
 
