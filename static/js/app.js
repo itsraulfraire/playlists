@@ -710,12 +710,6 @@ app.controller("playlistsCtrl", function ($scope, PlaylistFacade, SesionService)
     PlaylistFacade.obtenerPlaylists().then(function (data) {
         $scope.playlists = data;
     });
-    ObserverService.subscribe("playlistRecomendada", function(playlist) {
-        if (playlist && playlist.idPlaylist) {
-            $scope.playlists.push(playlist);
-            $scope.$apply();
-        }
-    });
 });
 app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverService) {
     $scope.estados = ["Feliz", "Triste", "Motivado", "Relajado"];
@@ -738,4 +732,5 @@ app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverServ
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
+
 
