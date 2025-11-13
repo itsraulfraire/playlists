@@ -217,7 +217,7 @@ app.config(function ($routeProvider, $locationProvider, $provide) {
         templateUrl: "playlists",
         controller: "playlistsCtrl"
     })
-    .when("/estado-animo", {
+    .when("/estadoAnimo", {
         templateUrl: "estadoAnimo",
         controller: "estadoAnimoCtrl"
     })
@@ -739,3 +739,4 @@ app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverServ
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
+
