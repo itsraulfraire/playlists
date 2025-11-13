@@ -1,20 +1,81 @@
-<div class="container mt-4 animate__animated {{slide}}">
-    <h3>🎧 Elige tu estado de ánimo</h3>
-
-    <div class="btn-group my-3" role="group">
-        <button ng-repeat="estado in estados"
-                ng-click="seleccionarEstado(estado)"
-                class="btn btn-outline-primary mx-1 while-waiting">
-            {{ "{{ estado }}" }}
-        </button>
-    </div>
-
-    <div class="mt-4" ng-if="playlistRecomendada">
-        <h5>🎵 Playlist recomendada:</h5>
-        <p><b>{{ "{{ playlistRecomendada.nombre }}" }}</b></p>
-        <p>{{ "{{ playlistRecomendada.descripcion }}" }}</p>
-        <a ng-href="{{ "{{ playlistRecomendada.url }}" }}" target="_blank" class="btn btn-success">
-            Abrir en Spotify
-        </a>
-    </div>
+<div class="text-center mb-4 animate__animated animate__fadeInDown">
+  <h2 class="fw-bold"><i class="bi bi-emoji-smile"></i> Recomendador por Estado de Ánimo</h2>
+  <p class="text-light opacity-75">
+    Bienvenido, {{ "{{ SesionService.getUsr() }}" }}.<br>
+    Selecciona cómo te sientes y descubre la playlist perfecta 🎵
+  </p>
 </div>
+
+<div class="container text-center animate__animated animate__fadeInUp">
+  <!-- Selector de estado de ánimo -->
+  <div class="mb-4">
+    <label for="estado" class="form-label fw-bold text-light">¿Cómo te sientes hoy?</label>
+    <select id="estado" ng-model="estadoSeleccionado" ng-options="estado for estado in estados" 
+            class="form-select text-center mx-auto" 
+            style="max-width: 300px; border-radius: 10px; background-color: #222; color: #fff;">
+    </select>
+    <button ng-click="seleccionarEstado(estadoSeleccionado)" 
+            class="btn btn-spotify mt-3 shadow-lg">
+      <i class="bi bi-search-heart"></i> Recomendar Playlist
+    </button>
+  </div>
+
+  <!-- Playlist recomendada -->
+  <div ng-if="playlistRecomendada" class="mt-5 animate__animated animate__fadeInUp">
+    <h4 class="text-light mb-3">
+      Playlist recomendada para cuando estás 
+      <span class="text-success fw-bold">{{ "{{ estadoSeleccionado }}" }}</span> 💚
+    </h4>
+
+    <div class="d-flex justify-content-center">
+      <div class="card playlist-card text-white shadow-lg" style="width: 18rem;">
+        <div class="card-img-overlay d-flex flex-column justify-content-end p-3"
+             style="background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));">
+          <h5 class="card-title">{{ "{{ playlistRecomendada.nombre }}" }}</h5>
+          <p class="card-text small text-light">{{ "{{ playlistRecomendada.descripcion }}" }}</p>
+          <a ng-href="{{ "{{ playlistRecomendada.url }}" }}" target="_blank" 
+             class="btn btn-sm btn-spotify mt-2">
+            <i class="bi bi-spotify"></i> Escuchar en Spotify
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje si no hay resultado -->
+  <div ng-if="!playlistRecomendada && estadoSeleccionado" 
+       class="text-light mt-4 animate__animated animate__fadeIn">
+    <i class="bi bi-emoji-frown"></i> No se encontró ninguna playlist asociada con ese estado de ánimo 😢
+  </div>
+</div>
+
+<div class="div-to-complete-screen"></div>
+
+<style>
+.playlist-card {
+  background: url('https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80') center/cover;
+  border: none;
+  border-radius: 1rem;
+  height: 260px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.playlist-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 0 25px rgba(0, 255, 127, 0.5);
+}
+.btn-spotify {
+  background-color: #1db954;
+  color: #000;
+  border: none;
+  transition: all 0.3s ease;
+}
+.btn-spotify:hover {
+  background-color: #1ed760;
+  transform: scale(1.05);
+}
+select.form-select {
+  background-color: #222;
+  color: #fff;
+  border: 1px solid #1db954;
+}
+</style>
