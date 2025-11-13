@@ -718,7 +718,8 @@ app.controller("playlistsCtrl", function ($scope, PlaylistFacade, SesionService,
         }
     });
 });
-app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverService) {
+app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverService, SesionService) {
+    $scope.SesionService = SesionService;
     $scope.estados = ["Feliz", "Triste", "Motivado", "Relajado"];
     $scope.playlistRecomendada = null;
 
@@ -728,8 +729,7 @@ app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverServ
                 $scope.playlistRecomendada = playlist;
             });
     };
-
-    // Cuando el Mediator recomiende una playlist, podemos reaccionar aquí o en otros módulos
+    
     ObserverService.subscribe("playlistRecomendada", function(playlist) {
         console.log("Nueva playlist recomendada:", playlist);
     });
@@ -739,5 +739,6 @@ app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverServ
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
+
 
 
