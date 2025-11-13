@@ -150,6 +150,35 @@ app.factory("PlaylistFacade", function (PlaylistAPI, PlaylistFactory, PlaylistDe
         }
     };
 });
+app.service("ObserverService", function() {
+    const observadores = {};
+
+    this.subscribe = function(evento, callback) {
+        if (!observadores[evento]) observadores[evento] = [];
+        observadores[evento].push(callback);
+    };
+
+    this.notify = function(evento, data) {
+        if (observadores[evento]) {
+            observadores[evento].forEach(callback => callback(data));
+        }
+    };
+});
+
+app.service("MediatorService", function($http, ObserverService) {
+    this.obtenerRecomendacion = function(estado) {
+        return $http.get("estadoAnimo/recomendar", { params: { estado } })
+            .then(res => {
+                const playlist = res.data;
+                ObserverService.notify("playlistRecomendada", playlist);
+                return playlist;
+            })
+            .catch(err => {
+                ObserverService.notify("error", err);
+                throw err;
+            });
+    };
+});
 
 
 app.config(function ($routeProvider, $locationProvider, $provide) {
@@ -187,6 +216,9 @@ app.config(function ($routeProvider, $locationProvider, $provide) {
     .when("/playlists", {
         templateUrl: "playlists",
         controller: "playlistsCtrl"
+    .when("/estado-animo", {
+        templateUrl: "estadoAnimo",
+        controller: "estadoAnimoCtrl"
     })
     .otherwise({
         redirectTo: "/"
@@ -678,8 +710,32 @@ app.controller("playlistsCtrl", function ($scope, PlaylistFacade, SesionService)
     PlaylistFacade.obtenerPlaylists().then(function (data) {
         $scope.playlists = data;
     });
+    ObserverService.subscribe("playlistRecomendada", function(playlist) {
+        if (playlist && playlist.idPlaylist) {
+            $scope.playlists.push(playlist);
+            $scope.$apply();
+        }
+    });
 });
+app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverService) {
+    $scope.estados = ["Feliz", "Triste", "Motivado", "Relajado"];
+    $scope.playlistRecomendada = null;
+
+    $scope.seleccionarEstado = function(estado) {
+        MediatorService.obtenerRecomendacion(estado)
+            .then(playlist => {
+                $scope.playlistRecomendada = playlist;
+            });
+    };
+
+    // Cuando el Mediator recomiende una playlist, podemos reaccionar aquí o en otros módulos
+    ObserverService.subscribe("playlistRecomendada", function(playlist) {
+        console.log("Nueva playlist recomendada:", playlist);
+    });
+});
+
 
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
+
