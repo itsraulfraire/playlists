@@ -5,15 +5,15 @@
         <button ng-repeat="estado in estados"
                 ng-click="seleccionarEstado(estado)"
                 class="btn btn-outline-primary mx-1 while-waiting">
-            {{estado}}
+            {{ "{{ estado }}" }}
         </button>
     </div>
 
     <div class="mt-4" ng-if="playlistRecomendada">
         <h5>🎵 Playlist recomendada:</h5>
-        <p><b>{{playlistRecomendada.nombre}}</b></p>
-        <p>{{playlistRecomendada.descripcion}}</p>
-        <a ng-href="{{playlistRecomendada.url}}" target="_blank" class="btn btn-success">
+        <p><b>{{ "{{ playlistRecomendada.nombre }}" }}</b></p>
+        <p>{{ "{{ playlistRecomendada.descripcion }}" }}</p>
+        <a ng-href="{{ "{{ playlistRecomendada.url }}" }}" target="_blank" class="btn btn-success">
             Abrir en Spotify
         </a>
     </div>
