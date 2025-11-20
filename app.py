@@ -237,7 +237,7 @@ def crearFavorito():
     try:
         payload = request.get_json()
 
-        user_id = payload.get("user_id")
+        user_id = session.get("id_usr")
         target_id = payload.get("targetId")
         tipo = payload.get("type")
 
@@ -320,6 +320,7 @@ def eliminarFavorito(id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
