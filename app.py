@@ -206,7 +206,7 @@ def favoritos_view():
 @requiere_login
 def obtenerFavoritos():
     try:
-        user_id = request.args.get("user_id")
+        user_id = session.get("id_usr")
 
         db = DatabaseConnection.get_instance()
         con = db.pool.get_connection()
@@ -320,6 +320,7 @@ def eliminarFavorito(id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
