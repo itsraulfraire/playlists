@@ -810,9 +810,10 @@ app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverServ
         console.log("Nueva playlist recomendada:", playlist);
     });
 });
-app.controller("favoritosCtrl", function($scope, FavoritosFacade, SesionService, MensajesService) {
+app.controller("favoritosCtrl", function($scope, FavoritosFacade, PlaylistsFacade, SesionService, MensajesService) {
     $scope.SesionService = SesionService;
     $scope.favoritos = [];
+    $scope.playlists = [];
     $scope.nuevo = { targetId: "", type: "playlist" };
 
     function cargar() {
@@ -820,10 +821,12 @@ app.controller("favoritosCtrl", function($scope, FavoritosFacade, SesionService,
             .then(function(data) {
                 $scope.favoritos = data;
                 $scope.$applyAsync();
-            })
-            .catch(function(err) {
-                console.error("Error al obtener favoritos", err);
-                MensajesService.toast("Error cargando favoritos");
+            });
+
+        PlaylistFacade.obtenerPlaylists()
+            .then(function(data) {
+                $scope.playlists = data;
+                $scope.$applyAsync();
             });
     }
 
@@ -869,12 +872,19 @@ app.controller("favoritosCtrl", function($scope, FavoritosFacade, SesionService,
             });
     };
 
+    $scope.getNombrePlaylist = function(id) {
+        const p = $scope.playlists.find(pl => pl.idPlaylist == id);
+        return p ? p.nombre : "(sin nombre)";
+    };
+
+
     cargar();
 });
 
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
+
 
 
 
