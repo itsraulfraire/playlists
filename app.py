@@ -242,6 +242,8 @@ def crearFavorito():
         target_id = payload.get("targetId")
         tipo = payload.get("type")
 
+        print("🔎 USER ID EN SESION:", session.get("id_usr"))
+
         if not target_id or not tipo:
             return jsonify({"error": "Faltan campos"}), 400
 
@@ -326,6 +328,7 @@ def eliminarFavorito(id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
