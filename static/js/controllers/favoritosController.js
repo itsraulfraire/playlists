@@ -11,12 +11,21 @@ app.controller("favoritosController", function($scope, $http) {
     };
 
     // Agregar favorito
-    $scope.agregar = function() {
-        $http.post("/api/favoritos", $scope.nuevo).then(() => {
+      $scope.agregar = function() {
+        let payload = {
+            targetId: $scope.nuevo.targetId,
+            type: $scope.nuevo.type,
+            user_id: localStorage.getItem("id_usr")
+        };
+    
+        $http.post("/api/favoritos", payload)
+        .then(res => {
+            console.log("Agregado", res.data);
             $scope.cargar();
-            $scope.nuevo = { targetId: "", type: "playlist" };
-        });
+        })
+        .catch(err => console.error(err));
     };
+
 
     // Actualizar tipo
     $scope.actualizarTipo = function(f, nuevoTipo) {
