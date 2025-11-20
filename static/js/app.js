@@ -810,7 +810,7 @@ app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverServ
         console.log("Nueva playlist recomendada:", playlist);
     });
 });
-app.controller("favoritosCtrl", function($scope, FavoritosFacade, PlaylistsFacade, SesionService, MensajesService) {
+app.controller("favoritosCtrl", function($scope, FavoritosFacade, PlaylistFacade, SesionService, MensajesService) {
     $scope.SesionService = SesionService;
     $scope.favoritos = [];
     $scope.playlists = [];
@@ -884,6 +884,7 @@ app.controller("favoritosCtrl", function($scope, FavoritosFacade, PlaylistsFacad
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
+
 
 
 
