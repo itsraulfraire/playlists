@@ -1,57 +1,91 @@
 <div ng-controller="favoritosCtrl" class="container p-3">
 
-  <h3>Favoritos</h3>
+  <div class="text-center mb-4 animate__animated animate__fadeInDown">
+    <h2 class="fw-bold"><i class="bi bi-heart-fill text-danger"></i> Tus Favoritos</h2>
+    <p class="text-light opacity-75">
+      Bienvenido, {{ "{{ SesionService.getUsr() }}" }}.<br>
+      Aquí puedes gestionar playlists, canciones o álbumes marcados como favoritos ❤️
+    </p>
+  </div>
 
-  <!-- Formulario para agregar -->
-  <div class="mb-3">
-    <label>Agregar favorito (targetId)</label>
-    <div class="input-group">
-      <input type="text" class="form-control" ng-model="nuevo.targetId" placeholder="id de playlist o canción">
+  <!-- Formulario agregar -->
+  <div class="mb-4 mx-auto" style="max-width: 600px;">
+    <div class="input-group shadow-lg">
+      <input type="text" class="form-control" ng-model="nuevo.targetId"
+             placeholder="ID de playlist, canción o álbum">
 
-      <select class="form-select" ng-model="nuevo.type">
+      <select class="form-select" ng-model="nuevo.type"
+              style="background-color:#222; color:#fff;">
         <option value="playlist">Playlist</option>
         <option value="song">Canción</option>
         <option value="album">Álbum</option>
       </select>
 
-      <button class="btn btn-primary" ng-click="agregar()">Agregar</button>
+      <button class="btn btn-spotify" ng-click="agregar()">
+        <i class="bi bi-plus-lg"></i>
+      </button>
     </div>
   </div>
 
   <!-- Si no hay datos -->
-  <div ng-if="!favoritos.length">No hay favoritos</div>
+  <div ng-if="!favoritos.length"
+       class="text-center text-light mt-5 animate__animated animate__fadeIn">
+    <i class="bi bi-emoji-frown"></i> No hay favoritos aún.
+  </div>
 
-  <!-- Listado -->
-  <div class="list-group">
-    <div class="list-group-item" ng-repeat="f in favoritos track by f.id">
+  <!-- Tarjetas -->
+  <div class="row g-4 justify-content-center">
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3"
+         ng-repeat="f in favoritos track by f.id">
 
-      <div class="d-flex justify-content-between align-items-center">
+      <div class="card playlist-card text-white shadow-lg animate__animated animate__fadeInUp">
 
-        <div>
-          <strong ng-bind="f.type"></strong> — ID:
-          <span ng-bind="f.target_id || f.targetId"></span>
+        <div class="card-img-overlay d-flex flex-column justify-content-between p-3"
+             style="background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0));">
 
-          <div class="small text-muted">
-            Creado: <span ng-bind="f.created_at"></span>
+          <!-- Tipo -->
+          <span class="badge"
+                ng-class="{
+                  'bg-primary': f.type=='playlist',
+                  'bg-success': f.type=='song',
+                  'bg-info': f.type=='album'
+                }">
+            {{ "{{ f.type | uppercase }}" }}
+          </span>
+
+          <!-- ID -->
+          <div class="mt-auto">
+            <h6 class="text-light">
+              ID: {{ "{{ f.targetId || f.target_id }}" }}
+            </h6>
+
+            <p class="small text-muted mb-1">
+              Creado: {{ "{{ f.created_at }}" }}
+            </p>
+
+            <!-- Controles -->
+            <div class="d-flex justify-content-between align-items-center mt-2">
+              <select ng-model="f.tipoTemporal"
+                      ng-init="f.tipoTemporal=f.type"
+                      class="form-select form-select-sm w-50">
+                <option value="playlist">Playlist</option>
+                <option value="song">Canción</option>
+                <option value="album">Álbum</option>
+              </select>
+
+              <button class="btn btn-sm btn-secondary"
+                      ng-click="actualizarTipo(f, f.tipoTemporal)">
+                <i class="bi bi-pencil"></i>
+              </button>
+
+              <button class="btn btn-sm btn-danger"
+                      ng-click="eliminar(f)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+
           </div>
-        </div>
 
-        <div>
-          <select ng-model="f.tipoTemporal" ng-init="f.tipoTemporal=f.type">
-            <option value="playlist">Playlist</option>
-            <option value="song">Canción</option>
-            <option value="album">Álbum</option>
-          </select>
-
-          <button class="btn btn-sm btn-secondary"
-                  ng-click="actualizarTipo(f, f.tipoTemporal)">
-            Actualizar
-          </button>
-
-          <button class="btn btn-sm btn-danger"
-                  ng-click="eliminar(f)">
-            Eliminar
-          </button>
         </div>
 
       </div>
@@ -59,4 +93,30 @@
     </div>
   </div>
 
+  <div class="div-to-complete-screen"></div>
 </div>
+
+<!-- Estilos -->
+<style>
+.playlist-card {
+  background: url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80') center/cover;
+  border: none;
+  border-radius: 1rem;
+  height: 260px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.playlist-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 0 25px rgba(255, 0, 102, 0.5);
+}
+.btn-spotify {
+  background-color: #1db954;
+  color: #000;
+  border: none;
+  transition: all 0.3s ease;
+}
+.btn-spotify:hover {
+  background-color: #1ed760;
+  transform: scale(1.05);
+}
+</style>
