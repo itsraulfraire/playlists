@@ -199,113 +199,131 @@ def fechaHora():
 def favoritos_view():
     return render_template("favoritos.html")
 
+# ==========================
+# GET - Obtener favoritos
+# ==========================
 @app.route("/api/favoritos", methods=["GET"])
 @requiere_login
 def obtenerFavoritos():
     try:
         user_id = session.get("id_usr")
+
         db = DatabaseConnection.get_instance()
         con = db.pool.get_connection()
         cursor = con.cursor(dictionary=True)
+
         cursor.execute("""
-            SELECT id, user_id, target_id, type, created_at
+            SELECT id, user_id, target_id AS targetId, type, created_at
             FROM favoritos
             WHERE user_id = %s
             ORDER BY created_at DESC
         """, (user_id,))
+
         data = cursor.fetchall()
         cursor.close()
         con.close()
-        return jsonify(data)
+        return jsonify(data), 200
+
     except Exception as e:
-        print("❌ ERROR en /favoritos GET:")
+        print("❌ ERROR en /api/favoritos GET")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+
+# ==========================
+# POST - Crear favorito
+# ==========================
 @app.route("/api/favoritos", methods=["POST"])
 @requiere_login
 def crearFavorito():
     try:
         user_id = session.get("id_usr")
-        target_id = request.form.get("targetId") or request.json.get("targetId")
-        tipo = request.form.get("type") or request.json.get("type")
+        payload = request.get_json()
+
+        target_id = payload.get("targetId")
+        tipo = payload.get("type")
 
         if not target_id or not tipo:
-            return jsonify({"error": "Faltan datos (targetId/type)"}), 400
+            return jsonify({"error": "Faltan campos"}), 400
 
         db = DatabaseConnection.get_instance()
         con = db.pool.get_connection()
-        cursor = con.cursor()
+        cursor = con.cursor(dictionary=True)
+
         cursor.execute("""
-            INSERT INTO favoritos (user_id, target_id, type, created_at)
-            VALUES (%s, %s, %s, NOW())
+            INSERT INTO favoritos (user_id, target_id, type)
+            VALUES (%s, %s, %s)
         """, (user_id, target_id, tipo))
+
         con.commit()
-        nuevo_id = cursor.lastrowid
+
+        new_id = cursor.lastrowid
+
         cursor.close()
         con.close()
 
-        return jsonify({"id": nuevo_id, "message": "Favorito creado"}), 201
+        return jsonify({"id": new_id, "message": "Creado"}), 201
+    
     except Exception as e:
-        print("❌ ERROR en /favoritos POST:")
+        print("❌ ERROR en /api/favoritos POST")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+
+# ==========================
+# PUT - Actualizar tipo
+# ==========================
 @app.route("/api/favoritos/<int:id>", methods=["PUT"])
 @requiere_login
 def actualizarFavorito(id):
     try:
-        # datos pueden venir en JSON
-        data = request.get_json() or {}
-        tipo = data.get("type")
-        if tipo is None:
-            return jsonify({"error": "No se proporcionó 'type' a actualizar"}), 400
-
-        user_id = session.get("id_usr")
+        payload = request.get_json()
+        nuevo_tipo = payload.get("type")
 
         db = DatabaseConnection.get_instance()
         con = db.pool.get_connection()
-        cursor = con.cursor()
-        # verificar que el favorito pertenezca al usuario
-        cursor.execute("SELECT id FROM favoritos WHERE id = %s AND user_id = %s", (id, user_id))
-        existe = cursor.fetchone()
-        if not existe:
-            cursor.close()
-            con.close()
-            return jsonify({"error": "Favorito no encontrado o no perteneciente al usuario"}), 404
+        cursor = con.cursor(dictionary=True)
 
-        cursor.execute("UPDATE favoritos SET type = %s WHERE id = %s", (tipo, id))
+        cursor.execute("""
+            UPDATE favoritos SET type = %s WHERE id = %s
+        """, (nuevo_tipo, id))
+
         con.commit()
         cursor.close()
         con.close()
-        return jsonify({"message": "Favorito actualizado"})
+
+        return jsonify({"message": "Actualizado"}), 200
+
     except Exception as e:
-        print("❌ ERROR en /favoritos PUT:")
+        print("❌ ERROR en /api/favoritos PUT")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+
+# ==========================
+# DELETE - Eliminar favorito
+# ==========================
 @app.route("/api/favoritos/<int:id>", methods=["DELETE"])
 @requiere_login
 def eliminarFavorito(id):
     try:
-        user_id = session.get("id_usr")
         db = DatabaseConnection.get_instance()
         con = db.pool.get_connection()
-        cursor = con.cursor()
-        cursor.execute("DELETE FROM favoritos WHERE id = %s AND user_id = %s", (id, user_id))
-        affected = cursor.rowcount
+        cursor = con.cursor(dictionary=True)
+
+        cursor.execute("DELETE FROM favoritos WHERE id = %s", (id,))
         con.commit()
+
         cursor.close()
         con.close()
 
-        if affected == 0:
-            return jsonify({"error": "Favorito no encontrado o no pertenece al usuario"}), 404
+        return jsonify({"message": "Eliminado"}), 200
 
-        return jsonify({"message": "Favorito eliminado"})
     except Exception as e:
-        print("❌ ERROR en /favoritos DELETE:")
+        print("❌ ERROR en /api/favoritos DELETE")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
 
 
 if __name__ == "__main__":
