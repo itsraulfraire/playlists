@@ -13,8 +13,8 @@
     <div class="input-group shadow-lg">
       <select ng-model="nuevo.targetId" class="form-control">
         <option value="">Seleccione playlist...</option>
-        <option ng-repeat="p in playlists" value="{{p.idPlaylist}}">
-          {{p.nombre}}
+        <option ng-repeat="p in playlists" value="{{ "{{ p.idPlaylist }}" }}">
+          {{ "{{ p.nombre }}" }}
         </option>
       </select>
       <select class="form-select" ng-model="nuevo.type" style="background-color:#222; color:#fff;">
