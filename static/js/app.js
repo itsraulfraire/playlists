@@ -81,6 +81,65 @@ app.service("PlaylistAPI", function ($q) {
         return deferred.promise;
     };
 });
+app.service("FavoritosAPI", function($q) {
+    this.getFavoritos = function() {
+        const deferred = $q.defer();
+        $.get("favoritos")
+            .done(data => deferred.resolve(data))
+            .fail(err => deferred.reject(err));
+        return deferred.promise;
+    };
+
+    this.createFavorito = function(payload) {
+        const deferred = $q.defer();
+        $.post({
+            url: "favoritos",
+            data: JSON.stringify(payload),
+            contentType: "application/json"
+        })
+        .done(data => deferred.resolve(data))
+        .fail(err => deferred.reject(err));
+        return deferred.promise;
+    };
+
+    this.updateFavorito = function(id, payload) {
+        const deferred = $q.defer();
+        $.ajax({
+            url: `favoritos/${id}`,
+            method: "PUT",
+            data: JSON.stringify(payload),
+            contentType: "application/json"
+        }).done(d => deferred.resolve(d)).fail(err => deferred.reject(err));
+        return deferred.promise;
+    };
+
+    this.deleteFavorito = function(id) {
+        const deferred = $q.defer();
+        $.ajax({
+            url: `favoritos/${id}`,
+            method: "DELETE"
+        }).done(d => deferred.resolve(d)).fail(err => deferred.reject(err));
+        return deferred.promise;
+    };
+});
+app.factory("FavoritosFacade", function(FavoritosAPI, $q) {
+    return {
+        // Query
+        obtenerFavoritos: function() {
+            return FavoritosAPI.getFavoritos();
+        },
+        // Commands
+        agregarFavorito: function({ targetId, type }) {
+            return FavoritosAPI.createFavorito({ targetId, type });
+        },
+        editarFavorito: function(id, { type }) {
+            return FavoritosAPI.updateFavorito(id, { type });
+        },
+        eliminarFavorito: function(id) {
+            return FavoritosAPI.deleteFavorito(id);
+        }
+    };
+});
 app.factory("PlaylistFactory", function () {
     function Playlist(idPlaylist, nombre, descripcion, url) {
         this.idPlaylist = idPlaylist;
@@ -220,6 +279,10 @@ app.config(function ($routeProvider, $locationProvider, $provide) {
     .when("/estadoAnimo", {
         templateUrl: "estadoAnimo",
         controller: "estadoAnimoCtrl"
+    })
+    .when("/favoritos", {
+        templateUrl: "favoritos",
+        controller: "favoritosCtrl"
     })
     .otherwise({
         redirectTo: "/"
@@ -734,11 +797,69 @@ app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverServ
         console.log("Nueva playlist recomendada:", playlist);
     });
 });
+app.controller("favoritosCtrl", function($scope, FavoritosFacade, SesionService, MensajesService) {
+    $scope.SesionService = SesionService;
+    $scope.favoritos = [];
+    $scope.nuevo = { targetId: "", type: "playlist" };
 
+    function cargar() {
+        FavoritosFacade.obtenerFavoritos()
+            .then(function(data) {
+                $scope.favoritos = data;
+                $scope.$applyAsync();
+            })
+            .catch(function(err) {
+                console.error("Error al obtener favoritos", err);
+                MensajesService.toast("Error cargando favoritos");
+            });
+    }
+
+    $scope.agregar = function() {
+        if (!$scope.nuevo.targetId || !$scope.nuevo.type) {
+            MensajesService.pop("Falta target o type");
+            return;
+        }
+        FavoritosFacade.agregarFavorito($scope.nuevo)
+            .then(function(res) {
+                MensajesService.toast("Favorito agregado");
+                $scope.nuevo.targetId = "";
+                cargar();
+            })
+            .catch(function(err) {
+                console.error(err);
+                MensajesService.pop("No se pudo agregar favorito");
+            });
+    };
+
+    $scope.actualizarTipo = function(fav, nuevoTipo) {
+        FavoritosFacade.editarFavorito(fav.id, { type: nuevoTipo })
+            .then(function() {
+                MensajesService.toast("Favorito actualizado");
+                cargar();
+            })
+            .catch(function(err) {
+                console.error(err);
+                MensajesService.pop("No se pudo actualizar favorito");
+            });
+    };
+
+    $scope.eliminar = function(fav) {
+        if (!confirm("¿Eliminar favorito?")) return;
+        FavoritosFacade.eliminarFavorito(fav.id)
+            .then(function() {
+                MensajesService.toast("Favorito eliminado");
+                cargar();
+            })
+            .catch(function(err) {
+                console.error(err);
+                MensajesService.pop("No se pudo eliminar favorito");
+            });
+    };
+
+    cargar();
+});
 
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
-
-
 
