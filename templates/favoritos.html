@@ -11,11 +11,13 @@
   <!-- Formulario agregar -->
   <div class="mb-4 mx-auto" style="max-width: 600px;">
     <div class="input-group shadow-lg">
-      <input type="text" class="form-control" ng-model="nuevo.targetId"
-             placeholder="ID de playlist, canción o álbum">
-
-      <select class="form-select" ng-model="nuevo.type"
-              style="background-color:#222; color:#fff;">
+      <select ng-model="nuevo.targetId" class="form-control">
+        <option value="">Seleccione playlist...</option>
+        <option ng-repeat="p in playlists" value="{{p.idPlaylist}}">
+          {{p.nombre}}
+        </option>
+      </select>
+      <select class="form-select" ng-model="nuevo.type" style="background-color:#222; color:#fff;">
         <option value="playlist">Playlist</option>
         <option value="song">Canción</option>
         <option value="album">Álbum</option>
@@ -56,7 +58,7 @@
           <!-- ID -->
           <div class="mt-auto">
             <h6 class="text-light">
-              ID: {{ "{{ f.targetId || f.target_id }}" }}
+              ID: {{ "{{ getNombrePlaylist(fav.targetId) }}" }}
             </h6>
 
             <p class="small text-muted mb-1">
