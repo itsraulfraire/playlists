@@ -84,16 +84,20 @@ app.service("PlaylistAPI", function ($q) {
 app.service("FavoritosAPI", function($q) {
     this.getFavoritos = function() {
         const deferred = $q.defer();
-        $.get("favoritos")
-            .done(data => deferred.resolve(data))
-            .fail(err => deferred.reject(err));
+        $.ajax({
+            url: "/api/favoritos",
+            method: "GET"
+        })
+        .done(data => deferred.resolve(data))
+        .fail(err => deferred.reject(err));
         return deferred.promise;
     };
 
     this.createFavorito = function(payload) {
         const deferred = $q.defer();
-        $.post({
-            url: "favoritos",
+        $.ajax({
+            url: "/api/favoritos",
+            method: "POST",
             data: JSON.stringify(payload),
             contentType: "application/json"
         })
@@ -105,20 +109,24 @@ app.service("FavoritosAPI", function($q) {
     this.updateFavorito = function(id, payload) {
         const deferred = $q.defer();
         $.ajax({
-            url: `favoritos/${id}`,
+            url: `/api/favoritos/${id}`,
             method: "PUT",
             data: JSON.stringify(payload),
             contentType: "application/json"
-        }).done(d => deferred.resolve(d)).fail(err => deferred.reject(err));
+        })
+        .done(d => deferred.resolve(d))
+        .fail(err => deferred.reject(err));
         return deferred.promise;
     };
 
     this.deleteFavorito = function(id) {
         const deferred = $q.defer();
         $.ajax({
-            url: `favoritos/${id}`,
+            url: `/api/favoritos/${id}`,
             method: "DELETE"
-        }).done(d => deferred.resolve(d)).fail(err => deferred.reject(err));
+        })
+        .done(d => deferred.resolve(d))
+        .fail(err => deferred.reject(err));
         return deferred.promise;
     };
 });
@@ -862,4 +870,6 @@ app.controller("favoritosCtrl", function($scope, FavoritosFacade, SesionService,
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
+
+
 
