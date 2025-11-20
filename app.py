@@ -213,9 +213,9 @@ def obtenerFavoritos():
         cursor = con.cursor(dictionary=True)
 
         cursor.execute("""
-            SELECT id, user_id, target_id AS targetId, type, created_at
+            SELECT id, id_usuarios AS user_id, target_id AS targetId, type, created_at
             FROM favoritos
-            WHERE user_id = %s
+            WHERE id_usuarios = %s
             ORDER BY created_at DESC
         """, (user_id,))
 
@@ -228,7 +228,6 @@ def obtenerFavoritos():
         print("❌ ERROR en /api/favoritos GET")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
-
 
 # ==========================
 # POST - Crear favorito
@@ -251,7 +250,7 @@ def crearFavorito():
         cursor = con.cursor(dictionary=True)
 
         cursor.execute("""
-            INSERT INTO favoritos (user_id, target_id, type)
+            INSERT INTO favoritos (id_usuarios, target_id, type)
             VALUES (%s, %s, %s)
         """, (user_id, target_id, tipo))
 
@@ -268,7 +267,6 @@ def crearFavorito():
         print("❌ ERROR en /api/favoritos POST")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
-
 
 # ==========================
 # PUT - Actualizar tipo
@@ -328,5 +326,6 @@ def eliminarFavorito(id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
