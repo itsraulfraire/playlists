@@ -199,7 +199,7 @@ def fechaHora():
 def favoritos_view():
     return render_template("favoritos.html")
 
-@app.route("/favoritos", methods=["GET"])
+@app.route("/api/favoritos", methods=["GET"])
 @requiere_login
 def obtenerFavoritos():
     try:
@@ -222,7 +222,7 @@ def obtenerFavoritos():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-@app.route("/favoritos", methods=["POST"])
+@app.route("/api/favoritos", methods=["POST"])
 @requiere_login
 def crearFavorito():
     try:
@@ -251,7 +251,7 @@ def crearFavorito():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-@app.route("/favoritos/<int:id>", methods=["PUT"])
+@app.route("/api/favoritos/<int:id>", methods=["PUT"])
 @requiere_login
 def actualizarFavorito(id):
     try:
@@ -284,7 +284,7 @@ def actualizarFavorito(id):
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-@app.route("/favoritos/<int:id>", methods=["DELETE"])
+@app.route("/api/favoritos/<int:id>", methods=["DELETE"])
 @requiere_login
 def eliminarFavorito(id):
     try:
@@ -310,3 +310,5 @@ def eliminarFavorito(id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
