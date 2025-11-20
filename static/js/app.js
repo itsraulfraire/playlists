@@ -138,7 +138,11 @@ app.factory("FavoritosFacade", function(FavoritosAPI, $q) {
         },
         // Commands
         agregarFavorito: function({ targetId, type }) {
-            return FavoritosAPI.createFavorito({ targetId, type });
+            return FavoritosAPI.createFavorito({
+                targetId,
+                type,
+                id_usuarios: localStorage.getItem("id_usr")
+            });
         },
         editarFavorito: function(id, { type }) {
             return FavoritosAPI.updateFavorito(id, { type });
@@ -763,6 +767,7 @@ app.controller("loginCtrl", function ($scope, $http, $rootScope) {
 
             if (respuesta.length) {
                 localStorage.setItem("login", "1")
+                localStorage.setItem("id_usr", respuesta[0].id_usuarios); // IMPORTANTE
                 localStorage.setItem("preferencias", JSON.stringify(respuesta[0]))
                 $("#frmInicioSesion").get(0).reset()
                 location.reload()
@@ -870,6 +875,7 @@ app.controller("favoritosCtrl", function($scope, FavoritosFacade, SesionService,
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
+
 
 
 
