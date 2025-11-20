@@ -206,7 +206,7 @@ def favoritos_view():
 @requiere_login
 def obtenerFavoritos():
     try:
-        user_id = session.get("id_usr")
+        user_id = request.args.get("user_id")
 
         db = DatabaseConnection.get_instance()
         con = db.pool.get_connection()
@@ -233,20 +233,16 @@ def obtenerFavoritos():
 # POST - Crear favorito
 # ==========================
 @app.route("/api/favoritos", methods=["POST"])
-@requiere_login
 def crearFavorito():
     try:
-        user_id = session.get("id_usr")
         payload = request.get_json()
 
-        if not user_id:
-            return jsonify({"error": "Usuario no autenticado"}), 401
-
+        user_id = payload.get("user_id")
         target_id = payload.get("targetId")
         tipo = payload.get("type")
 
-        if not target_id or not tipo:
-            return jsonify({"error": "Faltan campos"}), 400
+        if not user_id:
+            return jsonify({"error": "Falta user_id"}), 400
 
         db = DatabaseConnection.get_instance()
         con = db.pool.get_connection()
@@ -258,12 +254,8 @@ def crearFavorito():
         """, (user_id, target_id, tipo))
 
         con.commit()
-        new_id = cursor.lastrowid
 
-        cursor.close()
-        con.close()
-
-        return jsonify({"id": new_id, "message": "Creado"}), 201
+        return jsonify({"message": "Creado"}), 201
 
     except Exception as e:
         print("❌ ERROR en /api/favoritos POST")
@@ -328,6 +320,7 @@ def eliminarFavorito(id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
