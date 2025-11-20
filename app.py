@@ -239,10 +239,11 @@ def crearFavorito():
         user_id = session.get("id_usr")
         payload = request.get_json()
 
+        if not user_id:
+            return jsonify({"error": "Usuario no autenticado"}), 401
+
         target_id = payload.get("targetId")
         tipo = payload.get("type")
-
-        print("🔎 USER ID EN SESION:", session.get("id_usr"))
 
         if not target_id or not tipo:
             return jsonify({"error": "Faltan campos"}), 400
@@ -257,14 +258,13 @@ def crearFavorito():
         """, (user_id, target_id, tipo))
 
         con.commit()
-
         new_id = cursor.lastrowid
 
         cursor.close()
         con.close()
 
         return jsonify({"id": new_id, "message": "Creado"}), 201
-    
+
     except Exception as e:
         print("❌ ERROR en /api/favoritos POST")
         traceback.print_exc()
@@ -328,6 +328,7 @@ def eliminarFavorito(id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
