@@ -237,12 +237,14 @@ def obtenerFavoritos():
 def crearFavorito():
     try:
         user_id = session.get("id_usr")
-        payload = request.get_json()
+        print("🔎 USER ID EN SESION:", user_id)
 
+        if not user_id:
+            return jsonify({"error": "Sesión inválida"}), 401
+
+        payload = request.get_json()
         target_id = payload.get("targetId")
         tipo = payload.get("type")
-
-        print("🔎 USER ID EN SESION:", session.get("id_usr"))
 
         if not target_id or not tipo:
             return jsonify({"error": "Faltan campos"}), 400
@@ -258,17 +260,7 @@ def crearFavorito():
 
         con.commit()
 
-        new_id = cursor.lastrowid
-
-        cursor.close()
-        con.close()
-
-        return jsonify({"id": new_id, "message": "Creado"}), 201
-    
-    except Exception as e:
-        print("❌ ERROR en /api/favoritos POST")
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"id": cursor.lastrowid, "message": "Creado"}), 201
 
 # ==========================
 # PUT - Actualizar tipo
@@ -328,6 +320,7 @@ def eliminarFavorito(id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
