@@ -9,7 +9,7 @@
 <div class="container mb-4">
   <div class="card p-3 bg-dark text-white shadow-lg">
     <h4 class="mb-3">
-      {{ "{{ "Actualizar Playlist" if editando else "Crear Playlist" }}" }}
+      {{ "{{ tituloFormulario }}" }}
     </h4>
 
     <form ng-submit="guardarPlaylist()">
@@ -32,7 +32,7 @@
       </div>
 
       <button class="btn btn-success mt-2" type="submit">
-        {{ "{{ "Actualizar" if editando else "Crear" }}" }}
+        {{ "{{ boton }}" }}
       </button>
 
       <button class="btn btn-secondary mt-2" ng-click="cancelarEdicion()" ng-if="editando">
@@ -103,4 +103,5 @@
   transform: scale(1.05);
 }
 </style>
+
 
