@@ -6,21 +6,72 @@
   </p>
 </div>
 
+<div class="container mb-4">
+  <div class="card p-3 bg-dark text-white shadow-lg">
+    <h4 class="mb-3">
+      {{ editando ? "Actualizar Playlist" : "Crear Playlist" }}
+    </h4>
+
+    <form ng-submit="guardarPlaylist()">
+
+      <input type="hidden" ng-model="form.idPlaylist">
+
+      <div class="mb-2">
+        <label>Nombre</label>
+        <input class="form-control" ng-model="form.nombre" required>
+      </div>
+
+      <div class="mb-2">
+        <label>Descripción</label>
+        <input class="form-control" ng-model="form.descripcion" required>
+      </div>
+
+      <div class="mb-2">
+        <label>URL de Spotify</label>
+        <input class="form-control" ng-model="form.url" required>
+      </div>
+
+      <button class="btn btn-success mt-2" type="submit">
+        {{ editando ? "Actualizar" : "Crear" }}
+      </button>
+
+      <button class="btn btn-secondary mt-2" ng-click="cancelarEdicion()" ng-if="editando">
+        Cancelar
+      </button>
+    </form>
+  </div>
+</div>
+
 <div class="container">
   <div class="row g-4 justify-content-center">
     <div class="col-12 col-sm-6 col-md-4 col-lg-3" ng-repeat="p in playlists">
       <div class="card playlist-card text-white animate__animated animate__fadeInUp shadow-lg">
+    
         <div class="card-img-overlay d-flex flex-column justify-content-end p-3"
              style="background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));">
-          <h5 class="card-title">{{ "{{ p.nombre }}" }}</h5>
-          <p class="card-text small text-light">{{ "{{ p.descripcion }}" }}</p>
+    
+          <h5 class="card-title">{{ p.nombre }}</h5>
+          <p class="card-text small">{{ p.descripcion }}</p>
+    
           <p class="mb-1">
             <span ng-if="p.esPopular()" class="badge bg-warning text-dark">🌟 Popular</span>
-            <small>Popularidad: {{ "{{ p.popularidad }}" }}%</small>
+            <small>Popularidad: {{ p.popularidad }}%</small>
           </p>
-          <a ng-href="{{ "{{ p.url }}" }}" target="_blank" class="btn btn-sm btn-spotify mt-2">
+    
+          <a ng-href="{{ p.url }}" class="btn btn-sm btn-spotify mt-2" target="_blank">
             <i class="bi bi-spotify"></i> Escuchar
           </a>
+    
+          <div class="mt-2 d-flex gap-2">
+            <button class="btn btn-sm btn-primary" ng-click="editarPlaylist(p)">
+              <i class="bi bi-pencil-square"></i> Editar
+            </button>
+    
+            <button class="btn btn-sm btn-danger" ng-click="eliminarPlaylist(p.idPlaylist)">
+              <i class="bi bi-trash"></i> Eliminar
+            </button>
+          </div>
+    
         </div>
       </div>
     </div>
@@ -52,3 +103,4 @@
   transform: scale(1.05);
 }
 </style>
+
