@@ -4,6 +4,8 @@ app.controller("playlistsCtrl", function($scope, PlaylistsService, SesionService
     $scope.nueva = { nombre: "", descripcion: "", url: "" };
     $scope.form = {};
     $scope.editando = false;
+    $scope.tituloFormulario = $scope.editando ? "Actualizar Playlist" : "Crear Playlist";
+    $scope.boton = $scope.editando ? "Actualizar" : "Crear";
 
     function cargar() {
         PlaylistsService.obtenerPlaylists().then(function(data) {
