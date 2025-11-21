@@ -81,75 +81,6 @@ app.service("PlaylistAPI", function ($q) {
         return deferred.promise;
     };
 });
-app.factory("PlaylistFactory", function () {
-    function Playlist(idPlaylist, nombre, descripcion, url) {
-        this.idPlaylist = idPlaylist;
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-        this.url = url;
-    }
-
-    Playlist.prototype.getInfo = function () {
-        return {
-            idPlaylist: this.idPlaylist,
-            nombre: this.nombre,
-            descripcion: this.descripcion,
-            url: this.url
-        };
-    };
-
-    return {
-        create: function (idPlaylist, nombre, descripcion, url) {
-            return new Playlist(idPlaylist, nombre, descripcion, url);
-        }
-    };
-});
-app.factory("PlaylistDecorator", function () {
-    function decorate(playlist, extraData) {
-        playlist.popularidad = extraData.popularidad || 0;
-
-        playlist.esPopular = function () {
-            return this.popularidad >= 80;
-        };
-
-        playlist.getInfoCompleta = function () {
-            return {
-                idPlaylist: this.idPlaylist,
-                nombre: this.nombre,
-                descripcion: this.descripcion,
-                url: this.url,
-                popularidad: this.popularidad,
-                esPopular: this.esPopular()
-            };
-        };
-
-        return playlist;
-    }
-
-    return {
-        decorate: decorate
-    };
-});
-app.factory("PlaylistFacade", function (PlaylistAPI, PlaylistFactory, PlaylistDecorator, $q) {
-    return {
-        obtenerPlaylists: function () {
-            const deferred = $q.defer();
-
-            PlaylistAPI.buscarPlaylists()
-                .then(function (data) {
-                    const playlistsDecoradas = data.map(p => {
-                        const popularidad = Math.floor(Math.random() * 100);
-                        let playlist = PlaylistFactory.create(p.idPlaylist, p.nombre, p.descripcion, p.url);
-                        return PlaylistDecorator.decorate(playlist, { popularidad });
-                    });
-                    deferred.resolve(playlistsDecoradas);
-                })
-                .catch(err => deferred.reject(err));
-
-            return deferred.promise;
-        }
-    };
-});
 app.service("ObserverService", function() {
     const observadores = {};
 
@@ -709,20 +640,6 @@ app.controller("loginCtrl", function ($scope, $http, $rootScope) {
         disableAll()
     })
 })
-app.controller("playlistsCtrl", function ($scope, PlaylistFacade, SesionService, ObserverService) {
-    $scope.SesionService = SesionService;
-    $scope.playlists = [];
-
-    PlaylistFacade.obtenerPlaylists().then(function (data) {
-        $scope.playlists = data;
-    });
-    ObserverService.subscribe("playlistRecomendada", function(playlist) {
-        if (playlist && playlist.idPlaylist) {
-            $scope.playlists.push(playlist);
-            $scope.$apply();
-        }
-    });
-});
 app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverService, SesionService) {
     $scope.SesionService = SesionService;
     $scope.estados = ["Feliz", "Triste", "Motivado", "Relajado"];
@@ -742,3 +659,4 @@ app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverServ
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
+
