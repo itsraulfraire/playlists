@@ -1,4 +1,4 @@
-app.controller("favoritosCtrl", function($scope, FavoritosService, PlaylistFacade, SesionService, MensajesService) {
+app.controller("favoritosCtrl", function($scope, FavoritosService, PlaylistsService, SesionService, MensajesService) {
     $scope.SesionService = SesionService;
     $scope.favoritos = [];
     $scope.playlists = [];
@@ -14,7 +14,7 @@ app.controller("favoritosCtrl", function($scope, FavoritosService, PlaylistFacad
             $scope.$applyAsync();
         });
 
-        PlaylistFacade.obtenerPlaylists().then(data => {
+        PlaylistsService.obtenerPlaylists().then(data => {
             $scope.playlists = data;
             $scope.$applyAsync();
         });
