@@ -116,6 +116,28 @@ app.factory("PlaylistFactory", function () {
         }
     };
 });
+app.factory("PlaylistDecorator", function () {
+    function decorate(playlist, extraData) {
+        playlist.popularidad = extraData.popularidad || 0;
+        playlist.esPopular = function () {
+            return this.popularidad >= 80;
+        };
+        playlist.getInfoCompleta = function () {
+            return {
+                idPlaylist: this.idPlaylist,
+                nombre: this.nombre,
+                descripcion: this.descripcion,
+                url: this.url,
+                popularidad: this.popularidad,
+                esPopular: this.esPopular()
+            };
+        };
+        return playlist;
+    }
+    return {
+        decorate: decorate
+    };
+});
 app.service("MediatorService", function($http, ObserverService) {
     this.obtenerRecomendacion = function(estado) {
         return $http.get("estadoAnimo/recomendar", { params: { estado } })
@@ -679,5 +701,6 @@ app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverServ
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
+
 
 
