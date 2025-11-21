@@ -101,15 +101,6 @@ def iniciarSesion():
 def playlists():
     return render_template("playlists.html")
 
-
-@app.route("/preferencias")
-@requiere_login
-def preferencias():
-    return make_response(jsonify({
-        "usr": session.get("usr"),
-        "tipo": session.get("tipo", 2)
-    }))
-
 @app.route("/playlists/buscar")
 @requiere_login
 def buscarPlaylists():
@@ -139,6 +130,70 @@ def buscarPlaylists():
         print("❌ ERROR en /playlists/buscar:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+@app.route("/playlists", methods=["POST"])
+@requiere_login
+def crear_playlist():
+    data = request.get_json()
+    nombre = data.get("nombre")
+    descripcion = data.get("descripcion")
+    url = data.get("url")
+
+    db = DatabaseConnection.get_instance()
+    con = db.pool.get_connection()
+    cursor = con.cursor(dictionary=True)
+
+    cursor.execute("""
+        INSERT INTO playlists (nombre, descripcion, url, id_usuarios)
+        VALUES (%s, %s, %s, %s)
+    """, (nombre, descripcion, url, session["id_usr"]))
+
+    con.commit()
+    cursor.close()
+    con.close()
+    return jsonify({"message": "Creado"}), 201
+
+@app.route("/playlists/<int:id>", methods=["PUT"])
+@requiere_login
+def actualizar_playlist(id):
+    data = request.get_json()
+
+    db = DatabaseConnection.get_instance()
+    con = db.pool.get_connection()
+    cursor = con.cursor(dictionary=True)
+
+    cursor.execute("""
+        UPDATE playlists
+        SET nombre=%s, descripcion=%s, url=%s
+        WHERE idPlaylist=%s
+    """, (data["nombre"], data["descripcion"], data["url"], id))
+
+    con.commit()
+    cursor.close()
+    con.close()
+    return jsonify({"message": "Actualizado"}), 200
+
+@app.route("/playlists/<int:id>", methods=["DELETE"])
+@requiere_login
+def eliminar_playlist(id):
+    db = DatabaseConnection.get_instance()
+    con = db.pool.get_connection()
+    cursor = con.cursor(dictionary=True)
+
+    cursor.execute("DELETE FROM playlists WHERE idPlaylist=%s", (id,))
+    con.commit()
+
+    cursor.close()
+    con.close()
+    return jsonify({"message": "Eliminado"}), 200
+
+@app.route("/preferencias")
+@requiere_login
+def preferencias():
+    return make_response(jsonify({
+        "usr": session.get("usr"),
+        "tipo": session.get("tipo", 2)
+    }))
 
 @app.route("/estadoAnimo")
 @requiere_login
@@ -320,6 +375,7 @@ def eliminarFavorito(id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
