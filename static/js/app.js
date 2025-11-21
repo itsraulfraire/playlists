@@ -95,7 +95,27 @@ app.service("ObserverService", function() {
         }
     };
 });
-
+app.factory("PlaylistFactory", function () {
+    function Playlist(idPlaylist, nombre, descripcion, url) {
+        this.idPlaylist = idPlaylist;
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+        this.url = url;
+    }
+    Playlist.prototype.getInfo = function () {
+        return {
+            idPlaylist: this.idPlaylist,
+            nombre: this.nombre,
+            descripcion: this.descripcion,
+            url: this.url
+        };
+    };
+    return {
+        create: function (idPlaylist, nombre, descripcion, url) {
+            return new Playlist(idPlaylist, nombre, descripcion, url);
+        }
+    };
+});
 app.service("MediatorService", function($http, ObserverService) {
     this.obtenerRecomendacion = function(estado) {
         return $http.get("estadoAnimo/recomendar", { params: { estado } })
@@ -659,4 +679,5 @@ app.controller("estadoAnimoCtrl", function($scope, MediatorService, ObserverServ
 document.addEventListener("DOMContentLoaded", function (event) {
     activeMenuOption(location.hash)
 })
+
 
