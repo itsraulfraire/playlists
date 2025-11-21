@@ -2,6 +2,8 @@ app.controller("playlistsCtrl", function($scope, PlaylistsService, SesionService
     $scope.SesionService = SesionService;
     $scope.playlists = [];
     $scope.nueva = { nombre: "", descripcion: "", url: "" };
+    $scope.form = {};
+    $scope.editando = false;
 
     function cargar() {
         PlaylistsService.obtenerPlaylists().then(function(data) {
@@ -40,6 +42,41 @@ app.controller("playlistsCtrl", function($scope, PlaylistsService, SesionService
             .catch(() => MensajesService.pop("Error al eliminar"));
     };
 
+    // Crear o actualizar
+    $scope.guardarPlaylist = function () {
+        if ($scope.editando) {
+            PlaylistFacade.actualizarPlaylist($scope.form).then(() => {
+                alert("Playlist actualizada");
+                location.reload();
+            });
+        } else {
+            PlaylistFacade.crearPlaylist($scope.form).then(() => {
+                alert("Playlist creada");
+                location.reload();
+            });
+        }
+    };
+
+    $scope.editarPlaylist = function (playlist) {
+        $scope.editando = true;
+        $scope.form = angular.copy(playlist.getInfo());
+    };
+    
+    $scope.cancelarEdicion = function () {
+        $scope.editando = false;
+        $scope.form = {};
+    };
+
+    // Eliminar
+    $scope.eliminarPlaylist = function (idPlaylist) {
+        if (confirm("¿Seguro que deseas eliminar esta playlist?")) {
+            PlaylistFacade.eliminarPlaylist(idPlaylist).then(() => {
+                alert("Playlist eliminada");
+                location.reload();
+            });
+        }
+    };
+    
     // Evento desde estado de ánimo
     ObserverService.subscribe("playlistRecomendada", function(playlist) {
         $scope.playlists.push(playlist);
