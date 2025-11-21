@@ -13,18 +13,18 @@ app.service("PlaylistsDAO", function($q) {
     }
 
     this.buscar = function() {
-        return request("GET", "/playlists/buscar");
+        return request("GET", "/api/playlists/buscar");
     };
 
     this.crear = function(payload) {
-        return request("POST", "/playlists", payload);
+        return request("POST", "/api/playlists", payload);
     };
 
     this.actualizar = function(id, payload) {
-        return request("PUT", `/playlists/${id}`, payload);
+        return request("PUT", `/api/playlists/${id}`, payload);
     };
 
     this.eliminar = function(id) {
-        return request("DELETE", `/playlists/${id}`);
+        return request("DELETE", `/api/playlists/${id}`);
     };
 });
