@@ -101,7 +101,7 @@ def iniciarSesion():
 def playlists():
     return render_template("playlists.html")
 
-@app.route("/playlists/buscar")
+@app.route("/api/playlists/buscar")
 @requiere_login
 def buscarPlaylists():
     try:
@@ -131,7 +131,7 @@ def buscarPlaylists():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-@app.route("/playlists", methods=["POST"])
+@app.route("/api/playlists", methods=["POST"])
 @requiere_login
 def crear_playlist():
     data = request.get_json()
@@ -153,7 +153,7 @@ def crear_playlist():
     con.close()
     return jsonify({"message": "Creado"}), 201
 
-@app.route("/playlists/<int:id>", methods=["PUT"])
+@app.route("/api/playlists/<int:id>", methods=["PUT"])
 @requiere_login
 def actualizar_playlist(id):
     data = request.get_json()
@@ -173,7 +173,7 @@ def actualizar_playlist(id):
     con.close()
     return jsonify({"message": "Actualizado"}), 200
 
-@app.route("/playlists/<int:id>", methods=["DELETE"])
+@app.route("/api/playlists/<int:id>", methods=["DELETE"])
 @requiere_login
 def eliminar_playlist(id):
     db = DatabaseConnection.get_instance()
@@ -375,6 +375,7 @@ def eliminarFavorito(id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
